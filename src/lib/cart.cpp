@@ -179,8 +179,8 @@ void Cart::loadROM(std::string& filePath) {
     m_buffer[0x143] = 0; // In case the title is 16 byte, TODO: Should support a 16 byte title too
     m_cartHeader = reinterpret_cast<CartHeader&>(*(m_buffer.data() + 0x100));
 
-    uint8_t checksum = 0;
-    for (uint16_t address = 0x0134; address <= 0x014C; address++) {
+    u8 checksum = 0;
+    for (u16 address = 0x0134; address <= 0x014C; address++) {
         checksum = checksum - m_buffer[address] - 1;
     }
 
