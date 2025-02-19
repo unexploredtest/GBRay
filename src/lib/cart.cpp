@@ -193,6 +193,15 @@ void Cart::loadROM(std::string& filePath) {
 
 }
 
+u8 Cart::read(u16 address) {
+    return m_buffer[address];
+}
+
+void Cart::write(u16 address, u8 value) {
+    std::cout << "CART WRITE: Not impleneted" << std::endl;
+    return;
+}
+
 std::string Cart::getTitle() {
     const char* title = reinterpret_cast<char*>(m_cartHeader.title);
     return std::string(title);

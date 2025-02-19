@@ -6,8 +6,9 @@ int main(int argc, char** argv) {
         throw std::runtime_error("Wrong command line parameters");
     }
 
-    Emu emu = Emu();
     const char* filePath = argv[1]; 
+
+    Emu emu = Emu();
     emu.run(filePath);
     return 0;
 }

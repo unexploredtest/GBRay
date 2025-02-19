@@ -15,3 +15,4 @@ using u64 = uint64_t;
 // Declared here so that one can use the other in their definition
 class Cart;
 class Emu;
+class Bus;
