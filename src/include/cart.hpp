@@ -30,6 +30,7 @@ class Cart {
         void printROMInfo();
         std::string getTitle();
         std::string getLicensee();
+        std::string getLicenseeCode();
         std::string getType();
         uint32_t getROMSize();
         uint32_t getRAMSize();

@@ -40,40 +40,41 @@
 
 static const std::array<const char*, 0xFF> ROM_TYPES = [] {
     std::array<const char*, 0xFF> temp = {};
+    temp.fill("???"); // Unassigned value get the default value "???"
     temp[0x00] = "ROM ONLY";
     temp[0x01] = "MBC1";
     temp[0x02] = "MBC1+RAM";
     temp[0x03] = "MBC1+RAM+BATTERY";
-    temp[0x04] = "0x04 ???";
+    // temp[0x04] = "0x04 ???";
     temp[0x05] = "MBC2";
     temp[0x06] = "MBC2+BATTERY";
-    temp[0x07] = "0x07 ???";
+    // temp[0x07] = "0x07 ???";
     temp[0x08] = "ROM+RAM 1";
     temp[0x09] = "ROM+RAM+BATTERY 1";
-    temp[0x0A] = "0x0A ???";
+    // temp[0x0A] = "0x0A ???";
     temp[0x0B] = "MMM01";
     temp[0x0C] = "MMM01+RAM";
     temp[0x0D] = "MMM01+RAM+BATTERY";
-    temp[0x0E] = "0x0E ???";
+    // temp[0x0E] = "0x0E ???";
     temp[0x0F] = "MBC3+TIMER+BATTERY";
     temp[0x10] = "MBC3+TIMER+RAM+BATTERY 2";
     temp[0x11] = "MBC3";
     temp[0x12] = "MBC3+RAM 2";
     temp[0x13] = "MBC3+RAM+BATTERY 2";
-    temp[0x14] = "0x14 ???";
-    temp[0x15] = "0x15 ???";
-    temp[0x16] = "0x16 ???";
-    temp[0x17] = "0x17 ???";
-    temp[0x18] = "0x18 ???";
+    // temp[0x14] = "0x14 ???";
+    // temp[0x15] = "0x15 ???";
+    // temp[0x16] = "0x16 ???";
+    // temp[0x17] = "0x17 ???";
+    // temp[0x18] = "0x18 ???";
     temp[0x19] = "MBC5";
     temp[0x1A] = "MBC5+RAM";
     temp[0x1B] = "MBC5+RAM+BATTERY";
     temp[0x1C] = "MBC5+RUMBLE";
     temp[0x1D] = "MBC5+RUMBLE+RAM";
     temp[0x1E] = "MBC5+RUMBLE+RAM+BATTERY";
-    temp[0x1F] = "0x1F ???";
+    // temp[0x1F] = "0x1F ???";
     temp[0x20] = "MBC6";
-    temp[0x21] = "0x21 ???";
+    // temp[0x21] = "0x21 ???";
     temp[0x22] = "MBC7+SENSOR+RUMBLE+RAM+BATTERY";
     temp[0xFC] = "POCKET CAMERA";
     temp[0xFD] = "BANDAI TAMA5";
@@ -84,6 +85,7 @@ static const std::array<const char*, 0xFF> ROM_TYPES = [] {
 
 static const std::array<const char*, 0xA5> LIC_CODE = [] {
     std::array<const char*, 0xA5> temp = {};
+    temp.fill("UKNOWN"); // Unassigned value get the default value "UKNOWN"
     temp[0x00] = "None";
     temp[0x01] = "Nintendo R&D1";
     temp[0x08] = "Capcom";
@@ -197,11 +199,29 @@ std::string Cart::getTitle() {
 }
 std::string Cart::getLicensee() {
     if(m_cartHeader.licenseeCode <= 0x9A) {
-        return LIC_CODE[m_cartHeader.licenseeCode];
+        if(m_cartHeader.old_licenseeCode == 0x33) {
+            return LIC_CODE[m_cartHeader.licenseeCode];
+        } else {
+            return LIC_CODE[m_cartHeader.old_licenseeCode];
+        }
+        
     } else {
         return "UKNOWN";
     }
 }
+
+std::string Cart::getLicenseeCode() {
+    if(m_cartHeader.old_licenseeCode == 0x33) {
+        std::string codeType = "NEW ";
+        std::string code = std::to_string(m_cartHeader.licenseeCode);
+        return codeType + code;
+    } else {
+        std::string codeType = "OLD ";
+        std::string code = std::to_string(m_cartHeader.old_licenseeCode);
+        return codeType + code;
+    }
+}
+
 std::string Cart::getType() {
     return ROM_TYPES[m_cartHeader.cartridgeType];
 }
@@ -215,8 +235,7 @@ void Cart::printROMInfo() {
     m_cartHeader = reinterpret_cast<CartHeader&>(*(m_buffer.data() + 0x100));
     std::cout << "CARTRIDGE INFO:" << std::endl;
     std::cout << "TITLE: " << getTitle() << std::endl;
-    std::cout << "LICENSEE: " << m_cartHeader.licenseeCode <<
-        " " << getLicensee() << std::endl;
+    std::cout << "LICENSEE: " << getLicenseeCode() << " " << getLicensee() << std::endl;
     std::cout << "TYPE: " << m_cartHeader.cartridgeType << getType() << std::endl;
     std::cout << "ROM SIZE: " << m_buffer.size() << std::endl;
     std::cout << "HEADER VALIDITY: " << m_validHeader << std::endl;
