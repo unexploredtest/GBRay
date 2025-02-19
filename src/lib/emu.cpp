@@ -1,7 +1,7 @@
 #include "emu.hpp"
 
 Emu::Emu() {
-    m_cart = std::shared_ptr<Cart>(new Cart(this));
+    m_cart = std::make_unique<Cart>(this);
 }
 
 void Emu::run(std::string filePath) {

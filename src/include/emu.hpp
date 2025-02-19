@@ -9,5 +9,5 @@ class Emu {
         void run(std::string filePath);
 
     private:
-        std::shared_ptr<Cart> m_cart;
+        std::unique_ptr<Cart> m_cart;
 };
