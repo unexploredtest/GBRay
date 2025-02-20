@@ -3,6 +3,7 @@
 #include "common.hpp"
 #include "cart.hpp"
 #include "bus.hpp"
+#include "cpu.hpp"
 
 class Emu {
     public:
@@ -13,4 +14,5 @@ class Emu {
     private:
         std::unique_ptr<Cart> m_cart;
         std::unique_ptr<Bus> m_bus;
+        std::unique_ptr<Cpu> m_cpu;
 };

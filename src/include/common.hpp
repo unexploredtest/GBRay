@@ -16,3 +16,4 @@ using u64 = uint64_t;
 class Cart;
 class Emu;
 class Bus;
+class Cpu;
