@@ -4,7 +4,12 @@ static const std::array<Instruction, 0xFF> INSTRUCTIONS = [] {
     std::array<Instruction, 0xFF> temp = {};
     temp.fill(Instruction{}); // Unassigned values get the default NONE instruction
     temp[0x00] = Instruction{IN_NOP};
-    temp[0x80] = Instruction{IN_ADD};
+    temp[0x0E] = Instruction{IN_LD, AM_R_N8, R_C};
+    temp[0x11] = Instruction{IN_LD, AM_R_N16, R_DE};
+    temp[0x21] = Instruction{IN_LD, AM_R_N16, R_HL};
+    temp[0x47] = Instruction{IN_LD, AM_R_R, R_B, R_A};
+    temp[0x80] = Instruction{IN_ADD, AM_R_R, R_A, R_B};
+    temp[0xC3] = Instruction{IN_JP, AM_R_N16, R_PC};
 
     return temp;
 }();
@@ -29,8 +34,8 @@ void Cpu::step() {
         fetchInstuction(opcode);
         fetchData();
         runInstruction();
-    } catch (...) {
-
+    } catch (std::string error) {
+        
     }
     std::cin.get();
 }
@@ -51,6 +56,12 @@ void Cpu::runInstruction() {
     switch (m_curInst.insType) {
         case IN_NOP:
             break;
+        case IN_JP:
+            jmp();
+            break;
+        case IN_LD:
+            ld();
+            break;
         case IN_ADD:
             add();
             break;
@@ -68,12 +79,42 @@ void Cpu::add() {
     putData(result);
 }
 
+void Cpu::jmp() {
+    putData(m_curInstData.param2);
+}
+
+void Cpu::ld() {
+    putData(m_curInstData.param2);
+}
+
 void Cpu::fetchData() {
     switch (m_curInst.addrMode) {
         case AM_NONE:
             break;
+        case AM_R_N8: {
+            u16 result = m_emu->getBus()->read(m_regs.PC);
+            m_regs.PC++;
+            cycle(1);
+
+            m_curInstData = InstructionData{0, result};
+            break;
+        }
+        case AM_R_N16: {
+            u16 low = m_emu->getBus()->read(m_regs.PC);
+            m_regs.PC++;
+            cycle(1);
+
+            u16 high = m_emu->getBus()->read(m_regs.PC);
+            m_regs.PC++;
+            cycle(1);
+
+            u16 result = (high << 8) + low;
+            m_curInstData = InstructionData{0, result};
+            break;
+        }
         case AM_R_R:
             m_curInstData = InstructionData{readReg(m_curInst.reg1), readReg(m_curInst.reg2)};
+            break;
         default:
             throw std::runtime_error("ERROR: No such addressing mode");
     }
@@ -82,6 +123,12 @@ void Cpu::fetchData() {
 void Cpu::putData(u16 data) {
     switch (m_curInst.addrMode) {
         case AM_NONE:
+            break;
+        case AM_R_N8:
+            writeReg(m_curInst.reg1, data);
+            break;
+        case AM_R_N16:
+            writeReg(m_curInst.reg1, data);
             break;
         case AM_R_R:
             writeReg(m_curInst.reg1, data);
@@ -102,7 +149,10 @@ void Cpu::printCPUInfo() {
     std::cout << " BC: 0x" << std::hex << (int)readReg(R_BC);
     std::cout << " D: 0x" << std::hex << (int)m_regs.D;
     std::cout << " E: 0x" << std::hex << (int)m_regs.E;
-    std::cout << " BC: 0x" << std::hex << (int)readReg(R_DE);
+    std::cout << " DE: 0x" << std::hex << (int)readReg(R_DE);
+    std::cout << " H: 0x" << std::hex << (int)m_regs.H;
+    std::cout << " L: 0x" << std::hex << (int)m_regs.L;
+    std::cout << " HL: 0x" << std::hex << (int)readReg(R_HL);
     std::cout << " Flags: ";
     if(getFlag(F_Z)) {
         std::cout << 'Z';
@@ -227,7 +277,7 @@ u8 Cpu::getFlag(FlagType flagType) {
         case F_H:
             return 1 ? m_regs.F & 0x20 : 0;
         case F_C:
-            return 1 ? m_regs.C & 0x10 : 0;
+            return 1 ? m_regs.F & 0x10 : 0;
         default:
             return 0;
     }
