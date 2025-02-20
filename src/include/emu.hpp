@@ -10,6 +10,7 @@ class Emu {
         Emu();
         void run(std::string filePath);
         std::unique_ptr<Cart>& getCart(); 
+        std::unique_ptr<Bus>& getBus();
 
     private:
         std::unique_ptr<Cart> m_cart;

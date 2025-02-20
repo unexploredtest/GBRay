@@ -46,11 +46,93 @@ enum FlagType {
     F_NONE, F_Z, F_N, F_H, F_C
 };
 
+enum AddrMode {
+    AM_NONE,
+    AM_R_R,
+};
+
+enum InsType {
+    IN_NONE,
+    IN_NOP,
+    IN_LD,
+    IN_INC,
+    IN_DEC,
+    IN_RLCA,
+    IN_ADD,
+    IN_RRCA,
+    IN_STOP,
+    IN_RLA,
+    IN_JR,
+    IN_RRA,
+    IN_DAA,
+    IN_CPL,
+    IN_SCF,
+    IN_CCF,
+    IN_HALT,
+    IN_ADC,
+    IN_SUB,
+    IN_SBC,
+    IN_AND,
+    IN_XOR,
+    IN_OR,
+    IN_CP,
+    IN_POP,
+    IN_JP,
+    IN_PUSH,
+    IN_RET,
+    IN_CB,
+    IN_CALL,
+    IN_RETI,
+    IN_LDH,
+    IN_JPHL,
+    IN_DI,
+    IN_EI,
+    IN_RST,
+    IN_ERR,
+    //CB instructions...
+    IN_RLC, 
+    IN_RRC,
+    IN_RL, 
+    IN_RR,
+    IN_SLA, 
+    IN_SRA,
+    IN_SWAP, 
+    IN_SRL,
+    IN_BIT, 
+    IN_RES, 
+    IN_SET
+};
+
+enum CondType {
+    C_NONE, C_NZ, C_Z, C_NC, C_C
+};
+
+struct Instruction {
+    InsType insType;
+    AddrMode addrMode;
+    RegType reg1;
+    RegType reg2;
+    CondType cond;
+    u8 param;
+};
+
+struct InstructionData {
+    u16 param1;
+    u16 param2;
+};
+
 class Cpu {
     public:
         Cpu();
         Cpu(Emu* emu);
         void init();
+        void step();
+        void fetchData();
+        void putData(u16 data);
+        void cycle(int ticks);
+        void fetchInstuction(u8 opcode);
+        void runInstruction();
+        void printCPUInfo();
         u16 readReg(RegType regType);
         void writeReg(RegType regType, u16 data);
         u8 getFlag(FlagType flagType);
@@ -61,4 +143,9 @@ class Cpu {
     private:
         Emu* m_emu;
         Regs m_regs;
+
+        // instructions
+        Instruction m_curInst;
+        InstructionData m_curInstData;
+        void add();
 };

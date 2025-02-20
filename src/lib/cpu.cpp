@@ -1,11 +1,130 @@
 #include "cpu.hpp"
 
+static const std::array<Instruction, 0xFF> INSTRUCTIONS = [] {
+    std::array<Instruction, 0xFF> temp = {};
+    temp.fill(Instruction{}); // Unassigned values get the default NONE instruction
+    temp[0x00] = Instruction{IN_NOP};
+    temp[0x80] = Instruction{IN_ADD};
+
+    return temp;
+}();
+
+
 Cpu::Cpu(Emu* emu) {
     m_emu = emu;
 }
+
 void Cpu::init() {
     m_regs = {0};
     m_regs.PC = 0x100;
+}
+
+void Cpu::step() {
+
+    printCPUInfo();
+    u8 opcode = m_emu->getBus()->read(m_regs.PC);
+    m_regs.PC++;
+    cycle(1);
+    try {
+        fetchInstuction(opcode);
+        fetchData();
+        runInstruction();
+    } catch (...) {
+
+    }
+    std::cin.get();
+}
+
+void Cpu::cycle(int ticks) {
+
+}
+
+void Cpu::fetchInstuction(u8 opcode) {
+    std::cout << "INFO: Running instruction " << std::hex << (int)opcode << std::endl;
+    if(INSTRUCTIONS[opcode].insType == IN_NONE) {
+        throw std::runtime_error("ERROR: Unsupported opcode!");
+    }
+    m_curInst = INSTRUCTIONS[opcode];
+}
+
+void Cpu::runInstruction() {
+    switch (m_curInst.insType) {
+        case IN_NOP:
+            break;
+        case IN_ADD:
+            add();
+            break;
+        default:
+            throw std::runtime_error("ERROR: Unsupported instruction!");
+    }
+}
+
+void Cpu::add() {
+    u16 result = m_curInstData.param1 + m_curInstData.param2;
+    Cpu::clearFlag(F_N);
+    if(result == 0) {
+        Cpu::clearFlag(F_Z);
+    }
+    putData(result);
+}
+
+void Cpu::fetchData() {
+    switch (m_curInst.addrMode) {
+        case AM_NONE:
+            break;
+        case AM_R_R:
+            m_curInstData = InstructionData{readReg(m_curInst.reg1), readReg(m_curInst.reg2)};
+        default:
+            throw std::runtime_error("ERROR: No such addressing mode");
+    }
+}
+
+void Cpu::putData(u16 data) {
+    switch (m_curInst.addrMode) {
+        case AM_NONE:
+            break;
+        case AM_R_R:
+            writeReg(m_curInst.reg1, data);
+            break;
+        default:
+            throw std::runtime_error("ERROR: No such addressing mode");
+    }
+}
+
+void Cpu::printCPUInfo() {
+    std::cout << "PC: 0x" << std::hex << (int)m_regs.PC;
+    std::cout << " SP: 0x" << std::hex << (int)m_regs.SP;
+    std::cout << " A: 0x" << std::hex << (int)m_regs.A;
+    std::cout << " F: 0x" << std::hex << (int)m_regs.F;
+    std::cout << " AF: 0x" << std::hex << (int)readReg(R_AF);
+    std::cout << " B: 0x" << std::hex << (int)m_regs.B;
+    std::cout << " C: 0x" << std::hex << (int)m_regs.C;
+    std::cout << " BC: 0x" << std::hex << (int)readReg(R_BC);
+    std::cout << " D: 0x" << std::hex << (int)m_regs.D;
+    std::cout << " E: 0x" << std::hex << (int)m_regs.E;
+    std::cout << " BC: 0x" << std::hex << (int)readReg(R_DE);
+    std::cout << " Flags: ";
+    if(getFlag(F_Z)) {
+        std::cout << 'Z';
+    } else {
+        std::cout << '-';
+    }
+    if(getFlag(F_N)) {
+        std::cout << 'N';
+    } else {
+        std::cout << '-';
+    }
+    if(getFlag(F_H)) {
+        std::cout << 'H';
+    } else {
+        std::cout << '-';
+    }
+    if(getFlag(F_C)) {
+        std::cout << 'C';
+    } else {
+        std::cout << '-';
+    }
+    std::cout << std::endl;
 }
 
 u16 Cpu::readReg(RegType regType) {

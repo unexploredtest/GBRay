@@ -83,8 +83,8 @@ static const std::array<const char*, 0xFF> ROM_TYPES = [] {
     return temp;
 }();
 
-static const std::array<const char*, 0xA5> LIC_CODE = [] {
-    std::array<const char*, 0xA5> temp = {};
+static const std::array<const char*, 0xFF> LIC_CODE = [] {
+    std::array<const char*, 0xFF> temp = {};
     temp.fill("UKNOWN"); // Unassigned value get the default value "UKNOWN"
     temp[0x00] = "None";
     temp[0x01] = "Nintendo R&D1";
@@ -150,6 +150,21 @@ static const std::array<const char*, 0xA5> LIC_CODE = [] {
     return temp;
 }();
 
+// static const std::array<u32, 0xFF> ROM_SIZES = [] {
+//     std::array<u32, 0xFF> temp = {};
+//     temp.fill(0); // Unassigned values get the default value 0
+//     temp[0x00] = 32 * (1024); // 32 KiB
+//     temp[0x01] = 64 * (1024); // 64 KiB
+//     temp[0x02] = 128 * (1024); // 128 KiB
+//     temp[0x03] = 256 * (1024); // 256 KiB
+//     temp[0x04] = 512 * (1024); // 512 KiB
+//     temp[0x05] = 1 * (1024*1024); // 1 MiB
+//     temp[0x06] = 2 * (1024*1024); // 2 MiB
+//     temp[0x07] = 4 * (1024*1024); // 4 MiB
+//     temp[0x08] = 8 * (1024*1024); // 8 MiB
+//     return temp;
+// }();
+
 Cart::Cart(Emu* emu) {
     m_emu = emu;
     m_buffer = std::vector<char>(0);
@@ -206,6 +221,34 @@ std::string Cart::getTitle() {
     const char* title = reinterpret_cast<char*>(m_cartHeader.title);
     return std::string(title);
 }
+
+u32 Cart::getROMSize() {
+    if(m_cartHeader.ROMSize <= 0x08) {
+        return 32 * 1024 * (1 << m_cartHeader.ROMSize);
+    } else {
+        std::runtime_error("ERROR: No such ROM size");
+    }
+}
+
+u32 Cart::getRAMSize() {
+    switch (m_cartHeader.RAMSize) {
+        case 0x00:
+            return 0;
+        case 0x01:
+            return 2 * 1024;
+        case 0x02:
+            return 8 * 1024;
+        case 0x03:
+            return 32 * 1024;
+        case 0x04:
+            return 128 * 1024;
+        case 0x05:
+            return 64 * 1024;
+        default:
+            std::runtime_error("ERROR: No such RAM size");
+    }
+}
+
 std::string Cart::getLicensee() {
     if(m_cartHeader.licenseeCode <= 0x9A) {
         if(m_cartHeader.old_licenseeCode == 0x33) {
