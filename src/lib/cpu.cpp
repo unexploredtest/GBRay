@@ -8,6 +8,7 @@ static const std::array<Instruction, 0xFF> INSTRUCTIONS = [] {
     temp[0x0E] = Instruction{IN_LD, AM_R_N8, R_C};
     temp[0x11] = Instruction{IN_LD, AM_R_N16, R_DE};
     temp[0x21] = Instruction{IN_LD, AM_R_N16, R_HL};
+    temp[0x31] = Instruction{IN_LD, AM_R_N16, R_SP};
     temp[0x47] = Instruction{IN_LD, AM_R_R, R_B, R_A};
     temp[0x80] = Instruction{IN_ADD, AM_R_R, R_A, R_B};
     temp[0xAF] = Instruction{IN_XOR, AM_R_R, R_A, R_A};
@@ -101,7 +102,9 @@ void Cpu::XOR() {
 
 void Cpu::jmp() {
     // putData(m_curInstData.param2);
-    writeReg(R_PC, m_curInstData.param2);
+    if(checkCond()) {
+        writeReg(R_PC, m_curInstData.param2);
+    }
     cycle(1);   
 }
 
@@ -143,6 +146,23 @@ void Cpu::fetchData() {
             break;
         default:
             throw std::runtime_error("ERROR: No such addressing mode");
+    }
+}
+
+bool Cpu::checkCond() {
+    switch (m_curInst.cond) {
+        case C_NONE:
+            return true;
+        case C_Z:
+            return getFlag(F_Z) == 1;
+        case C_NZ:
+            return getFlag(F_Z) == 0;
+        case C_C:
+            return getFlag(F_C) == 1;
+        case C_NC:
+            return getFlag(F_C) == 0;
+        default:
+            throw std::runtime_error("ERROR: No such condition!");
     }
 }
 

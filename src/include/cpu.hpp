@@ -130,6 +130,7 @@ class Cpu {
         void init();
         void step();
         void fetchData();
+        bool checkCond();
         void putData(u16 data);
         void cycle(int ticks);
         void fetchInstuction(u8 opcode);
