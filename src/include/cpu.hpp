@@ -146,10 +146,14 @@ class Cpu {
         Emu* m_emu;
         Regs m_regs;
 
+        bool m_intMasterEnabled = false;
+
         // instructions
         Instruction m_curInst;
         InstructionData m_curInstData;
         void add();
+        void XOR();
         void jmp();
         void ld();
+        void di();
 };

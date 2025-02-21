@@ -4,12 +4,15 @@ static const std::array<Instruction, 0xFF> INSTRUCTIONS = [] {
     std::array<Instruction, 0xFF> temp = {};
     temp.fill(Instruction{}); // Unassigned values get the default NONE instruction
     temp[0x00] = Instruction{IN_NOP};
+    temp[0x06] = Instruction{IN_LD, AM_R_N8, R_B};
     temp[0x0E] = Instruction{IN_LD, AM_R_N8, R_C};
     temp[0x11] = Instruction{IN_LD, AM_R_N16, R_DE};
     temp[0x21] = Instruction{IN_LD, AM_R_N16, R_HL};
     temp[0x47] = Instruction{IN_LD, AM_R_R, R_B, R_A};
     temp[0x80] = Instruction{IN_ADD, AM_R_R, R_A, R_B};
+    temp[0xAF] = Instruction{IN_XOR, AM_R_R, R_A, R_A};
     temp[0xC3] = Instruction{IN_JP, AM_R_N16, R_PC};
+    temp[0xF3] = Instruction{IN_DI};
 
     return temp;
 }();
@@ -65,6 +68,12 @@ void Cpu::runInstruction() {
         case IN_ADD:
             add();
             break;
+        case IN_XOR:
+            XOR();
+            break;
+        case IN_DI:
+            di();
+            break;
         default:
             throw std::runtime_error("ERROR: Unsupported instruction!");
     }
@@ -79,8 +88,25 @@ void Cpu::add() {
     putData(result);
 }
 
+void Cpu::XOR() {
+    u16 result = m_curInstData.param1 ^ m_curInstData.param2;
+    Cpu::clearFlag(F_N);
+    Cpu::clearFlag(F_C);
+    Cpu::clearFlag(F_H);
+    if(result == 0) {
+        Cpu::clearFlag(F_Z);
+    }
+    putData(result);
+}
+
 void Cpu::jmp() {
-    putData(m_curInstData.param2);
+    // putData(m_curInstData.param2);
+    writeReg(R_PC, m_curInstData.param2);
+    cycle(1);   
+}
+
+void Cpu::di() {
+    m_intMasterEnabled = false;
 }
 
 void Cpu::ld() {
@@ -140,6 +166,10 @@ void Cpu::putData(u16 data) {
 
 void Cpu::printCPUInfo() {
     std::cout << "PC: 0x" << std::hex << (int)m_regs.PC;
+    std::cout << " (" << std::hex << (int)m_emu->getBus()->read(m_regs.PC );
+    std::cout << " " << std::hex << (int)m_emu->getBus()->read(m_regs.PC + 1);
+    std::cout << " " << std::hex << (int)m_emu->getBus()->read(m_regs.PC + 2);
+    std::cout << ")";
     std::cout << " SP: 0x" << std::hex << (int)m_regs.SP;
     std::cout << " A: 0x" << std::hex << (int)m_regs.A;
     std::cout << " F: 0x" << std::hex << (int)m_regs.F;
