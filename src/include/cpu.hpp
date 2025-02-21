@@ -51,6 +51,14 @@ enum AddrMode {
     AM_R_R,
     AM_R_N8,
     AM_R_N16,
+    AM_MR_R,
+    AM_R_MR,
+    AM_HLI_R,
+    AM_R_HLI,
+    AM_HLD_R,
+    AM_R_HLD,
+    AM_MR_N8,
+    // AM_R_MHLI,
 };
 
 enum InsType {

@@ -4,11 +4,30 @@ static const std::array<Instruction, 0xFF> INSTRUCTIONS = [] {
     std::array<Instruction, 0xFF> temp = {};
     temp.fill(Instruction{}); // Unassigned values get the default NONE instruction
     temp[0x00] = Instruction{IN_NOP};
+    temp[0x01] = Instruction{IN_LD, AM_R_N16, R_BC};
+    temp[0x02] = Instruction{IN_LD, AM_MR_R, R_BC, R_A};
     temp[0x06] = Instruction{IN_LD, AM_R_N8, R_B};
+    temp[0x0A] = Instruction{IN_LD, AM_R_MR, R_A, R_BC};
     temp[0x0E] = Instruction{IN_LD, AM_R_N8, R_C};
+    // 0x10
     temp[0x11] = Instruction{IN_LD, AM_R_N16, R_DE};
+    temp[0x12] = Instruction{IN_LD, AM_MR_R, R_DE, R_A};
+    temp[0x16] = Instruction{IN_LD, AM_R_N8, R_D};
+    temp[0x1A] = Instruction{IN_LD, AM_R_MR, R_A, R_DE};
+    temp[0x1E] = Instruction{IN_LD, AM_R_N8, R_E};
+    // 0x20
     temp[0x21] = Instruction{IN_LD, AM_R_N16, R_HL};
+    temp[0x22] = Instruction{IN_LD, AM_HLI_R, R_HL, R_A};
+    temp[0x26] = Instruction{IN_LD, AM_R_N8, R_H};
+    temp[0x2A] = Instruction{IN_LD, AM_R_HLI, R_A, R_HL};
+    temp[0x2E] = Instruction{IN_LD, AM_R_N8, R_L};
+    // 0x30
     temp[0x31] = Instruction{IN_LD, AM_R_N16, R_SP};
+    temp[0x32] = Instruction{IN_LD, AM_HLD_R, R_HL, R_A};
+    temp[0x36] = Instruction{IN_LD, AM_MR_N8, R_HL};
+    temp[0x3A] = Instruction{IN_LD, AM_R_HLD, R_A, R_HL};
+    temp[0x3E] = Instruction{IN_LD, AM_R_N8, R_A};
+    // 0x40
     temp[0x47] = Instruction{IN_LD, AM_R_R, R_B, R_A};
     temp[0x80] = Instruction{IN_ADD, AM_R_R, R_A, R_B};
     temp[0xAF] = Instruction{IN_XOR, AM_R_R, R_A, R_A};
@@ -120,12 +139,13 @@ void Cpu::fetchData() {
     switch (m_curInst.addrMode) {
         case AM_NONE:
             break;
+        case AM_MR_N8:
         case AM_R_N8: {
             u16 result = m_emu->getBus()->read(m_regs.PC);
             m_regs.PC++;
             cycle(1);
 
-            m_curInstData = InstructionData{0, result};
+            m_curInstData = InstructionData{readReg(m_curInst.reg1), result};
             break;
         }
         case AM_R_N16: {
@@ -141,9 +161,24 @@ void Cpu::fetchData() {
             m_curInstData = InstructionData{0, result};
             break;
         }
+        case AM_HLI_R:
+        case AM_HLD_R:
+        case AM_MR_R:
         case AM_R_R:
             m_curInstData = InstructionData{readReg(m_curInst.reg1), readReg(m_curInst.reg2)};
             break;
+        case AM_R_HLI:
+        case AM_R_HLD:
+        case AM_R_MR:
+            m_curInstData = InstructionData{readReg(m_curInst.reg1),
+                m_emu->getBus()->read(readReg(m_curInst.reg2))};
+            break;
+        // case AM_HLI_R:
+        //     m_curInstData = InstructionData{readReg(m_curInst.reg1), readReg(m_curInst.reg2)};
+        //     break;
+        // case AM_R_HLI:
+        //     m_curInstData = InstructionData{readReg(m_curInst.reg1), readReg(m_curInst.reg2)};
+        //     break;
         default:
             throw std::runtime_error("ERROR: No such addressing mode");
     }
@@ -176,8 +211,34 @@ void Cpu::putData(u16 data) {
         case AM_R_N16:
             writeReg(m_curInst.reg1, data);
             break;
+        case AM_R_MR:
         case AM_R_R:
             writeReg(m_curInst.reg1, data);
+            break;
+        case AM_MR_R:
+            // writeReg(m_curInst.reg1, data);
+            m_emu->getBus()->write(m_curInst.reg1, data);
+            break;
+        case AM_HLI_R:
+            // writeReg(m_curInst.reg1, data);
+            m_emu->getBus()->write(m_curInst.reg1, data);
+            writeReg(R_HL, readReg(R_HL) + 1);
+            break;
+        case AM_R_HLI:
+            writeReg(m_curInst.reg1, data);
+            writeReg(R_HL, readReg(R_HL) + 1);
+            break;
+        case AM_HLD_R:
+            // writeReg(m_curInst.reg1, data);
+            m_emu->getBus()->write(m_curInst.reg1, data);
+            writeReg(R_HL, readReg(R_HL) - 1);
+            break;
+        case AM_R_HLD:
+            writeReg(m_curInst.reg1, data);
+            writeReg(R_HL, readReg(R_HL) - 1);
+            break;
+        case AM_MR_N8:
+            m_emu->getBus()->write(m_curInst.reg1, data);
             break;
         default:
             throw std::runtime_error("ERROR: No such addressing mode");
