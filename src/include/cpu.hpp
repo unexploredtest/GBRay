@@ -60,6 +60,8 @@ enum AddrMode {
     AM_MR_N8,
     AM_R_MN16,
     AM_MN16_R,
+    AM_R_MN8,
+    AM_MN8_R,
     // AM_R_MHLI,
 };
 

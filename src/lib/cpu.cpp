@@ -102,9 +102,11 @@ static const std::array<Instruction, 0xFF> INSTRUCTIONS = [] {
     temp[0xC3] = Instruction{IN_JP, AM_R_N16, R_PC};
     
     // 0xE0
+    temp[0xE0] = Instruction{IN_LDH, AM_MN8_R, R_A};
     temp[0xE2] = Instruction{IN_LD, AM_MR_R, R_C, R_A};
     temp[0xEA] = Instruction{IN_LD, AM_MN16_R, R_A};
     // 0xF0
+    temp[0xE0] = Instruction{IN_LDH, AM_R_MN8, R_A};
     temp[0xF2] = Instruction{IN_LD, AM_R_MR, R_A, R_C};
     temp[0xF3] = Instruction{IN_DI};
     temp[0xF9] = Instruction{IN_LD, AM_R_R, R_SP, R_HL};
@@ -217,17 +219,8 @@ void Cpu::ld() {
 }
 
 void Cpu::ldh() {
-    // if(m_curInst.addrMode == AM_MR_R || (m_curInst.addrMode == AM_R_MR)) {
-    //     putData(m_curInstData.param2 + 0xFF00);
-    // } else if(m_curInst.addrMode == AM_R_MN16 && m_curInstData.param2 <= 0xFFFF
-    //     && m_curInstData.param2 >= 0xFF00) {
-    //     putData(m_curInstData.param2);
-    // } else if(m_curInst.addrMode == AM_MN16_R && m_curInstData.param1 <= 0xFFFF
-    //     && m_curInstData.param1 >= 0xFF00) {
-    //     putData(m_curInstData.param2);
-    // }
+    putData(m_curInstData.param2);
     cycle(1);
-    // putData(m_curInstData.param2);
 }
 
 void Cpu::fetchData() {
@@ -300,6 +293,22 @@ void Cpu::fetchData() {
             m_curInstData = InstructionData{result, readReg(m_curInst.reg1)};
             break;
         }
+        case AM_R_MN8: {
+            u16 result = m_emu->getBus()->read(m_regs.PC) + 0xFF00;
+            m_regs.PC++;
+            cycle(1);
+
+            m_curInstData = InstructionData{0, m_emu->getBus()->read(result)};
+            break;
+        }
+        case AM_MN8_R: {
+            u16 result = m_emu->getBus()->read(m_regs.PC) + 0xFF00;
+            m_regs.PC++;
+            cycle(1);
+
+            m_curInstData = InstructionData{result, readReg(m_curInst.reg1)};
+            break;
+        }
         // case AM_HLI_R:
         //     m_curInstData = InstructionData{readReg(m_curInst.reg1), readReg(m_curInst.reg2)};
         //     break;
@@ -338,6 +347,7 @@ void Cpu::putData(u16 data) {
         case AM_R_N16:
             writeReg(m_curInst.reg1, data);
             break;
+        case AM_R_MN8:
         case AM_R_MN16:
         case AM_R_MR:
         case AM_R_R:
@@ -368,6 +378,7 @@ void Cpu::putData(u16 data) {
         case AM_MR_N8:
             m_emu->getBus()->write(m_curInst.reg1, data);
             break;
+        case AM_MN8_R:
         case AM_MN16_R:
             m_emu->getBus()->write(m_curInstData.param1, data);
         default:
