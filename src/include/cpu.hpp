@@ -48,6 +48,8 @@ enum FlagType {
 
 enum AddrMode {
     AM_NONE,
+    AM_R,
+    AM_MR,
     AM_R_R,
     AM_R_N8,
     AM_R_N16,
@@ -168,6 +170,8 @@ class Cpu {
         Instruction m_curInst;
         InstructionData m_curInstData;
         void add();
+        void inc();
+        void dec();
         void XOR();
         void jmp();
         void ld();
