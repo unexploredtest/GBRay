@@ -17,3 +17,4 @@ class Cart;
 class Emu;
 class Bus;
 class Cpu;
+class Ram;

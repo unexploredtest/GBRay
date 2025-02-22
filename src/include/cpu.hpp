@@ -58,6 +58,8 @@ enum AddrMode {
     AM_HLD_R,
     AM_R_HLD,
     AM_MR_N8,
+    AM_R_MN16,
+    AM_MN16_R,
     // AM_R_MHLI,
 };
 
@@ -150,12 +152,15 @@ class Cpu {
         void setFlag(FlagType flagType);
         void clearFlag(FlagType flagType);
         void toggleFlag(FlagType flagType);
+        u8 readIERegister();
+        void writeIERegister(u8 data);
 
     private:
         Emu* m_emu;
         Regs m_regs;
 
         bool m_intMasterEnabled = false;
+        u8 m_IERegister;
 
         // instructions
         Instruction m_curInst;
@@ -164,5 +169,6 @@ class Cpu {
         void XOR();
         void jmp();
         void ld();
+        void ldh();
         void di();
 };

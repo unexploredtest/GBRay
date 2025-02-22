@@ -213,7 +213,7 @@ u8 Cart::read(u16 address) {
 }
 
 void Cart::write(u16 address, u8 value) {
-    std::cout << "CART WRITE: Not impleneted" << std::endl;
+    std::cout << "CART WRITE: Not implemented" << std::endl;
     return;
 }
 

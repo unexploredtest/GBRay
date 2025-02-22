@@ -7,6 +7,7 @@ static const std::array<Instruction, 0xFF> INSTRUCTIONS = [] {
     temp[0x01] = Instruction{IN_LD, AM_R_N16, R_BC};
     temp[0x02] = Instruction{IN_LD, AM_MR_R, R_BC, R_A};
     temp[0x06] = Instruction{IN_LD, AM_R_N8, R_B};
+    temp[0x08] = Instruction{IN_LD, AM_MN16_R, R_SP};
     temp[0x0A] = Instruction{IN_LD, AM_R_MR, R_A, R_BC};
     temp[0x0E] = Instruction{IN_LD, AM_R_N8, R_C};
     // 0x10
@@ -28,11 +29,86 @@ static const std::array<Instruction, 0xFF> INSTRUCTIONS = [] {
     temp[0x3A] = Instruction{IN_LD, AM_R_HLD, R_A, R_HL};
     temp[0x3E] = Instruction{IN_LD, AM_R_N8, R_A};
     // 0x40
+    temp[0x40] = Instruction{IN_LD, AM_R_R, R_B, R_B};
+    temp[0x41] = Instruction{IN_LD, AM_R_R, R_B, R_C};
+    temp[0x42] = Instruction{IN_LD, AM_R_R, R_B, R_D};
+    temp[0x43] = Instruction{IN_LD, AM_R_R, R_B, R_E};
+    temp[0x44] = Instruction{IN_LD, AM_R_R, R_B, R_H};
+    temp[0x45] = Instruction{IN_LD, AM_R_R, R_B, R_L};
+    temp[0x46] = Instruction{IN_LD, AM_R_MR, R_B, R_HL};
     temp[0x47] = Instruction{IN_LD, AM_R_R, R_B, R_A};
+    temp[0x48] = Instruction{IN_LD, AM_R_R, R_C, R_B};
+    temp[0x49] = Instruction{IN_LD, AM_R_R, R_C, R_C};
+    temp[0x4A] = Instruction{IN_LD, AM_R_R, R_C, R_D};
+    temp[0x4B] = Instruction{IN_LD, AM_R_R, R_C, R_E};
+    temp[0x4C] = Instruction{IN_LD, AM_R_R, R_C, R_H};
+    temp[0x4D] = Instruction{IN_LD, AM_R_R, R_C, R_L};
+    temp[0x4E] = Instruction{IN_LD, AM_R_MR, R_C, R_HL};
+    temp[0x4F] = Instruction{IN_LD, AM_R_R, R_C, R_A};
+    // 0x50
+    temp[0x50] = Instruction{IN_LD, AM_R_R, R_D, R_B};
+    temp[0x51] = Instruction{IN_LD, AM_R_R, R_D, R_C};
+    temp[0x52] = Instruction{IN_LD, AM_R_R, R_D, R_D};
+    temp[0x53] = Instruction{IN_LD, AM_R_R, R_D, R_E};
+    temp[0x54] = Instruction{IN_LD, AM_R_R, R_D, R_H};
+    temp[0x55] = Instruction{IN_LD, AM_R_R, R_D, R_L};
+    temp[0x56] = Instruction{IN_LD, AM_R_MR, R_D, R_HL};
+    temp[0x57] = Instruction{IN_LD, AM_R_R, R_D, R_A};
+    temp[0x58] = Instruction{IN_LD, AM_R_R, R_E, R_B};
+    temp[0x59] = Instruction{IN_LD, AM_R_R, R_E, R_C};
+    temp[0x5A] = Instruction{IN_LD, AM_R_R, R_E, R_D};
+    temp[0x5B] = Instruction{IN_LD, AM_R_R, R_E, R_E};
+    temp[0x5C] = Instruction{IN_LD, AM_R_R, R_E, R_H};
+    temp[0x5D] = Instruction{IN_LD, AM_R_R, R_E, R_L};
+    temp[0x5E] = Instruction{IN_LD, AM_R_MR, R_E, R_HL};
+    temp[0x5F] = Instruction{IN_LD, AM_R_R, R_E, R_A};
+    // 0x60
+    temp[0x60] = Instruction{IN_LD, AM_R_R, R_H, R_B};
+    temp[0x61] = Instruction{IN_LD, AM_R_R, R_H, R_C};
+    temp[0x62] = Instruction{IN_LD, AM_R_R, R_H, R_D};
+    temp[0x63] = Instruction{IN_LD, AM_R_R, R_H, R_E};
+    temp[0x64] = Instruction{IN_LD, AM_R_R, R_H, R_H};
+    temp[0x65] = Instruction{IN_LD, AM_R_R, R_H, R_L};
+    temp[0x66] = Instruction{IN_LD, AM_R_MR, R_H, R_HL};
+    temp[0x67] = Instruction{IN_LD, AM_R_R, R_H, R_A};
+    temp[0x68] = Instruction{IN_LD, AM_R_R, R_L, R_B};
+    temp[0x69] = Instruction{IN_LD, AM_R_R, R_L, R_C};
+    temp[0x6A] = Instruction{IN_LD, AM_R_R, R_L, R_D};
+    temp[0x6B] = Instruction{IN_LD, AM_R_R, R_L, R_E};
+    temp[0x6C] = Instruction{IN_LD, AM_R_R, R_L, R_H};
+    temp[0x6D] = Instruction{IN_LD, AM_R_R, R_L, R_L};
+    temp[0x6E] = Instruction{IN_LD, AM_R_MR, R_L, R_HL};
+    temp[0x6F] = Instruction{IN_LD, AM_R_R, R_L, R_A};
+    // 0X70
+    temp[0x70] = Instruction{IN_LD, AM_MR_R, R_HL, R_B};
+    temp[0x71] = Instruction{IN_LD, AM_MR_R, R_HL, R_C};
+    temp[0x72] = Instruction{IN_LD, AM_MR_R, R_HL, R_D};
+    temp[0x73] = Instruction{IN_LD, AM_MR_R, R_HL, R_E};
+    temp[0x74] = Instruction{IN_LD, AM_MR_R, R_HL, R_H};
+    temp[0x75] = Instruction{IN_LD, AM_MR_R, R_HL, R_L};
+    // temp[0x76] = Instruction{IN_LD, AM_R_MR, R_H, R_HL};
+    temp[0x77] = Instruction{IN_LD, AM_MR_R, R_HL, R_A};
+    temp[0x78] = Instruction{IN_LD, AM_R_R, R_A, R_B};
+    temp[0x79] = Instruction{IN_LD, AM_R_R, R_A, R_C};
+    temp[0x7A] = Instruction{IN_LD, AM_R_R, R_A, R_D};
+    temp[0x7B] = Instruction{IN_LD, AM_R_R, R_A, R_E};
+    temp[0x7C] = Instruction{IN_LD, AM_R_R, R_A, R_H};
+    temp[0x7D] = Instruction{IN_LD, AM_R_R, R_A, R_L};
+    temp[0x7E] = Instruction{IN_LD, AM_R_MR, R_A, R_HL};
+    temp[0x7F] = Instruction{IN_LD, AM_R_R, R_A, R_A};
+    // 0x80
     temp[0x80] = Instruction{IN_ADD, AM_R_R, R_A, R_B};
     temp[0xAF] = Instruction{IN_XOR, AM_R_R, R_A, R_A};
     temp[0xC3] = Instruction{IN_JP, AM_R_N16, R_PC};
+    
+    // 0xE0
+    temp[0xE2] = Instruction{IN_LD, AM_MR_R, R_C, R_A};
+    temp[0xEA] = Instruction{IN_LD, AM_MN16_R, R_A};
+    // 0xF0
+    temp[0xF2] = Instruction{IN_LD, AM_R_MR, R_A, R_C};
     temp[0xF3] = Instruction{IN_DI};
+    temp[0xF9] = Instruction{IN_LD, AM_R_R, R_SP, R_HL};
+    temp[0xFA] = Instruction{IN_LD, AM_R_MN16, R_A};
 
     return temp;
 }();
@@ -132,7 +208,26 @@ void Cpu::di() {
 }
 
 void Cpu::ld() {
+    if(m_curInst.addrMode == AM_MR_R && m_curInst.reg1 == R_C) {
+        m_curInstData.param1 += 0xFF00;
+    }
     putData(m_curInstData.param2);
+    
+    cycle(1);
+}
+
+void Cpu::ldh() {
+    // if(m_curInst.addrMode == AM_MR_R || (m_curInst.addrMode == AM_R_MR)) {
+    //     putData(m_curInstData.param2 + 0xFF00);
+    // } else if(m_curInst.addrMode == AM_R_MN16 && m_curInstData.param2 <= 0xFFFF
+    //     && m_curInstData.param2 >= 0xFF00) {
+    //     putData(m_curInstData.param2);
+    // } else if(m_curInst.addrMode == AM_MN16_R && m_curInstData.param1 <= 0xFFFF
+    //     && m_curInstData.param1 >= 0xFF00) {
+    //     putData(m_curInstData.param2);
+    // }
+    cycle(1);
+    // putData(m_curInstData.param2);
 }
 
 void Cpu::fetchData() {
@@ -170,9 +265,41 @@ void Cpu::fetchData() {
         case AM_R_HLI:
         case AM_R_HLD:
         case AM_R_MR:
-            m_curInstData = InstructionData{readReg(m_curInst.reg1),
-                m_emu->getBus()->read(readReg(m_curInst.reg2))};
+            if(m_curInst.reg2 == R_C) {
+                m_curInstData = InstructionData{readReg(m_curInst.reg1),
+                    m_emu->getBus()->read(readReg(m_curInst.reg2) + 0xFF00)};
+            } else {
+                m_curInstData = InstructionData{readReg(m_curInst.reg1),
+                    m_emu->getBus()->read(readReg(m_curInst.reg2))};
+            }
+            
             break;
+        case AM_R_MN16: {
+            u16 low = m_emu->getBus()->read(m_regs.PC);
+            m_regs.PC++;
+            cycle(1);
+
+            u16 high = m_emu->getBus()->read(m_regs.PC);
+            m_regs.PC++;
+            cycle(1);
+
+            u16 result = (high << 8) + low;
+            m_curInstData = InstructionData{0, m_emu->getBus()->read(result)};
+            break;
+        }
+        case AM_MN16_R: {
+            u16 low = m_emu->getBus()->read(m_regs.PC);
+            m_regs.PC++;
+            cycle(1);
+
+            u16 high = m_emu->getBus()->read(m_regs.PC);
+            m_regs.PC++;
+            cycle(1);
+
+            u16 result = (high << 8) + low;
+            m_curInstData = InstructionData{result, readReg(m_curInst.reg1)};
+            break;
+        }
         // case AM_HLI_R:
         //     m_curInstData = InstructionData{readReg(m_curInst.reg1), readReg(m_curInst.reg2)};
         //     break;
@@ -211,6 +338,7 @@ void Cpu::putData(u16 data) {
         case AM_R_N16:
             writeReg(m_curInst.reg1, data);
             break;
+        case AM_R_MN16:
         case AM_R_MR:
         case AM_R_R:
             writeReg(m_curInst.reg1, data);
@@ -240,6 +368,8 @@ void Cpu::putData(u16 data) {
         case AM_MR_N8:
             m_emu->getBus()->write(m_curInst.reg1, data);
             break;
+        case AM_MN16_R:
+            m_emu->getBus()->write(m_curInstData.param1, data);
         default:
             throw std::runtime_error("ERROR: No such addressing mode");
     }
@@ -455,4 +585,12 @@ void Cpu::toggleFlag(FlagType flagType) {
         default:
             break;
     }
+}
+
+u8 Cpu::readIERegister() {
+    return m_IERegister;
+}
+
+void Cpu::writeIERegister(u8 data) {
+    m_IERegister = data;
 }
