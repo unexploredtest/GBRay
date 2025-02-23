@@ -125,14 +125,26 @@ static const std::array<Instruction, 0xFF> INSTRUCTIONS = [] {
     temp[0xAF] = Instruction{IN_XOR, AM_R_R, R_A, R_A};
     temp[0xC3] = Instruction{IN_JP, AM_R_N16, R_PC};
     
+    // 0xC0
+    temp[0xC1] = Instruction{IN_POP, AM_R, R_BC};
+    temp[0xC5] = Instruction{IN_PUSH, AM_R, R_BC};
+
+    // 0xD0
+    temp[0xD1] = Instruction{IN_POP, AM_R, R_DE};
+    temp[0xD5] = Instruction{IN_PUSH, AM_R, R_DE};
+
     // 0xE0
     temp[0xE0] = Instruction{IN_LDH, AM_MN8_R, R_A};
+    temp[0xE1] = Instruction{IN_POP, AM_R, R_HL};
     temp[0xE2] = Instruction{IN_LD, AM_MR_R, R_C, R_A};
+    temp[0xE5] = Instruction{IN_PUSH, AM_R, R_HL};
     temp[0xEA] = Instruction{IN_LD, AM_MN16_R, R_A};
     // 0xF0
-    temp[0xE0] = Instruction{IN_LDH, AM_R_MN8, R_A};
+    temp[0xF0] = Instruction{IN_LDH, AM_R_MN8, R_A};
+    temp[0xF1] = Instruction{IN_POP, AM_R, R_AF};
     temp[0xF2] = Instruction{IN_LD, AM_R_MR, R_A, R_C};
     temp[0xF3] = Instruction{IN_DI};
+    temp[0xF5] = Instruction{IN_PUSH, AM_R, R_AF};
     temp[0xF9] = Instruction{IN_LD, AM_R_R, R_SP, R_HL};
     temp[0xFA] = Instruction{IN_LD, AM_R_MN16, R_A};
 
@@ -189,6 +201,12 @@ void Cpu::runInstruction() {
             break;
         case IN_LDH:
             ldh();
+            break;
+        case IN_PUSH:
+            push();
+            break;
+        case IN_POP:
+            pop();
             break;
         case IN_INC:
             inc();
@@ -298,6 +316,33 @@ void Cpu::ld() {
 void Cpu::ldh() {
     putData(m_curInstData.param2);
     cycle(1);
+}
+
+void Cpu::push() {
+    u8 high = (m_curInstData.param2 >> 8) && 0xFF;
+    cycle(1);
+    pushStack(high);
+    
+
+    u8 low = m_curInstData.param2 && 0xFF;
+    cycle(1);
+    pushStack(low);
+    
+    cycle(1);
+}
+
+void Cpu::pop() {
+    u16 low = popStack();
+    cycle(1);
+    u16 high = popStack();
+    cycle(1);
+
+    u16 result = low | (high << 8);
+    if(m_curInst.reg1 == R_AF) {
+        result = result & 0xFFF0;
+    }
+
+    putData(result);
 }
 
 void Cpu::fetchData() {
@@ -693,4 +738,15 @@ u8 Cpu::readIERegister() {
 
 void Cpu::writeIERegister(u8 data) {
     m_IERegister = data;
+}
+
+void Cpu::pushStack(u8 data) {
+    m_regs.SP--;
+    m_emu->getBus()->write(m_regs.SP, data);
+}
+
+u8 Cpu::popStack() {
+    u8 data = m_emu->getBus()->read(m_regs.SP);
+    m_regs.SP++;
+    return data;
 }

@@ -158,6 +158,8 @@ class Cpu {
         void toggleFlag(FlagType flagType);
         u8 readIERegister();
         void writeIERegister(u8 data);
+        void pushStack(u8 data);
+        u8 popStack();
 
     private:
         Emu* m_emu;
@@ -176,5 +178,7 @@ class Cpu {
         void jmp();
         void ld();
         void ldh();
+        void push();
+        void pop();
         void di();
 };
