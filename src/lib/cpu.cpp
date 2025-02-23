@@ -123,16 +123,18 @@ static const std::array<Instruction, 0xFF> INSTRUCTIONS = [] {
     // 0x80
     temp[0x80] = Instruction{IN_ADD, AM_R_R, R_A, R_B};
     temp[0xAF] = Instruction{IN_XOR, AM_R_R, R_A, R_A};
-    temp[0xC3] = Instruction{IN_JP, AM_R_N16, R_PC};
     
     // 0xC0
     temp[0xC0] = Instruction{IN_RET, AM_R, R_PC, R_NONE, C_NZ};
     temp[0xC1] = Instruction{IN_POP, AM_R, R_BC};
+    temp[0xC2] = Instruction{IN_JP, AM_R_N16, R_PC, R_NONE, C_NZ};
+    temp[0xC3] = Instruction{IN_JP, AM_R_N16, R_PC};
     temp[0xC4] = Instruction{IN_CALL, AM_R_MN16, R_PC, R_NONE, C_NZ};
     temp[0xC5] = Instruction{IN_PUSH, AM_R, R_BC};
     temp[0xC7] = Instruction{IN_RST, AM_R, R_PC, R_NONE, C_NONE, 0x00};
     temp[0xC8] = Instruction{IN_RET, AM_R, R_PC, R_NONE, C_Z};
     temp[0xC9] = Instruction{IN_RET, AM_R, R_PC, R_NONE, C_NONE};
+    temp[0xCA] = Instruction{IN_JP, AM_R_N16, R_PC, R_NONE, C_Z};
     temp[0xCC] = Instruction{IN_CALL, AM_R_MN16, R_PC, R_NONE, C_Z};
     temp[0xCD] = Instruction{IN_CALL, AM_R_MN16, R_PC, R_NONE, C_NONE};
     temp[0xCF] = Instruction{IN_RST, AM_R, R_PC, R_NONE, C_NONE, 0x08};
@@ -140,11 +142,13 @@ static const std::array<Instruction, 0xFF> INSTRUCTIONS = [] {
     // 0xD0
     temp[0xD0] = Instruction{IN_RET, AM_R, R_PC, R_NONE, C_NC};
     temp[0xD1] = Instruction{IN_POP, AM_R, R_DE};
+    temp[0xD2] = Instruction{IN_JP, AM_R_N16, R_PC, R_NONE, C_NC};
     temp[0xD4] = Instruction{IN_CALL, AM_R_MN16, R_PC, R_NONE, C_NC};
     temp[0xD5] = Instruction{IN_PUSH, AM_R, R_DE};
     temp[0xD7] = Instruction{IN_RST, AM_R, R_PC, R_NONE, C_NONE, 0x10};
     temp[0xD8] = Instruction{IN_RET, AM_R, R_PC, R_NONE, C_C};
     temp[0xD9] = Instruction{IN_RETI, AM_R, R_PC, R_NONE, C_NONE};
+    temp[0xDA] = Instruction{IN_JP, AM_R_N16, R_PC, R_NONE, C_C};
     temp[0xDC] = Instruction{IN_CALL, AM_R_MN16, R_PC, R_NONE, C_C};
     temp[0xDF] = Instruction{IN_RST, AM_R, R_PC, R_NONE, C_NONE, 0x18};
 
@@ -154,6 +158,7 @@ static const std::array<Instruction, 0xFF> INSTRUCTIONS = [] {
     temp[0xE2] = Instruction{IN_LD, AM_MR_R, R_C, R_A};
     temp[0xE5] = Instruction{IN_PUSH, AM_R, R_HL};
     temp[0xE7] = Instruction{IN_RST, AM_R, R_PC, R_NONE, C_NONE, 0x20};
+    temp[0xE9] = Instruction{IN_JP, AM_R_R, R_PC, R_HL};
     temp[0xEA] = Instruction{IN_LD, AM_MN16_R, R_A};
     temp[0xEF] = Instruction{IN_RST, AM_R, R_PC, R_NONE, C_NONE, 0x28};
     // 0xF0
