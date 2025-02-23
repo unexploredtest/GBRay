@@ -319,12 +319,12 @@ void Cpu::ldh() {
 }
 
 void Cpu::push() {
-    u8 high = (m_curInstData.param2 >> 8) && 0xFF;
+    u8 high = (m_curInstData.param1 >> 8) && 0xFF;
     cycle(1);
     pushStack(high);
     
 
-    u8 low = m_curInstData.param2 && 0xFF;
+    u8 low = m_curInstData.param1 && 0xFF;
     cycle(1);
     pushStack(low);
     
