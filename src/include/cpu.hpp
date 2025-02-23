@@ -176,6 +176,8 @@ class Cpu {
         void inc();
         void dec();
         void XOR();
+        void AND();
+        void OR();
         void jmp();
         void jr();
         void call();

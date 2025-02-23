@@ -127,8 +127,35 @@ static const std::array<Instruction, 0xFF> INSTRUCTIONS = [] {
     temp[0x7F] = Instruction{IN_LD, AM_R_R, R_A, R_A};
     // 0x80
     temp[0x80] = Instruction{IN_ADD, AM_R_R, R_A, R_B};
+
+    // 0xA0
+    temp[0xA0] = Instruction{IN_AND, AM_R_R, R_A, R_B};
+    temp[0xA1] = Instruction{IN_AND, AM_R_R, R_A, R_C};
+    temp[0xA2] = Instruction{IN_AND, AM_R_R, R_A, R_D};
+    temp[0xA3] = Instruction{IN_AND, AM_R_R, R_A, R_E};
+    temp[0xA4] = Instruction{IN_AND, AM_R_R, R_A, R_H};
+    temp[0xA5] = Instruction{IN_AND, AM_R_R, R_A, R_L};
+    temp[0xA6] = Instruction{IN_AND, AM_R_MR, R_A, R_HL};
+    temp[0xA7] = Instruction{IN_AND, AM_R_R, R_A, R_A};
+    temp[0xA8] = Instruction{IN_XOR, AM_R_R, R_A, R_B};
+    temp[0xA9] = Instruction{IN_XOR, AM_R_R, R_A, R_C};
+    temp[0xAA] = Instruction{IN_XOR, AM_R_R, R_A, R_D};
+    temp[0xAB] = Instruction{IN_XOR, AM_R_R, R_A, R_E};
+    temp[0xAC] = Instruction{IN_XOR, AM_R_R, R_A, R_H};
+    temp[0xAD] = Instruction{IN_XOR, AM_R_R, R_A, R_L};
+    temp[0xAE] = Instruction{IN_XOR, AM_R_MR, R_A, R_HL};
     temp[0xAF] = Instruction{IN_XOR, AM_R_R, R_A, R_A};
     
+    // 0xB0
+    temp[0xB0] = Instruction{IN_OR, AM_R_R, R_A, R_B};
+    temp[0xB1] = Instruction{IN_OR, AM_R_R, R_A, R_C};
+    temp[0xB2] = Instruction{IN_OR, AM_R_R, R_A, R_D};
+    temp[0xB3] = Instruction{IN_OR, AM_R_R, R_A, R_E};
+    temp[0xB4] = Instruction{IN_OR, AM_R_R, R_A, R_H};
+    temp[0xB5] = Instruction{IN_OR, AM_R_R, R_A, R_L};
+    temp[0xB6] = Instruction{IN_OR, AM_R_MR, R_A, R_HL};
+    temp[0xB7] = Instruction{IN_OR, AM_R_R, R_A, R_A};
+
     // 0xC0
     temp[0xC0] = Instruction{IN_RET, AM_R, R_PC, R_NONE, C_NZ};
     temp[0xC1] = Instruction{IN_POP, AM_R, R_BC};
@@ -162,9 +189,11 @@ static const std::array<Instruction, 0xFF> INSTRUCTIONS = [] {
     temp[0xE1] = Instruction{IN_POP, AM_R, R_HL};
     temp[0xE2] = Instruction{IN_LD, AM_MR_R, R_C, R_A};
     temp[0xE5] = Instruction{IN_PUSH, AM_R, R_HL};
+    temp[0xE6] = Instruction{IN_AND, AM_R_N8, R_A};
     temp[0xE7] = Instruction{IN_RST, AM_R, R_PC, R_NONE, C_NONE, 0x20};
     temp[0xE9] = Instruction{IN_JP, AM_R_R, R_PC, R_HL};
     temp[0xEA] = Instruction{IN_LD, AM_MN16_R, R_A};
+    temp[0xEE] = Instruction{IN_XOR, AM_R_N8, R_A};
     temp[0xEF] = Instruction{IN_RST, AM_R, R_PC, R_NONE, C_NONE, 0x28};
     // 0xF0
     temp[0xF0] = Instruction{IN_LDH, AM_R_MN8, R_A};
@@ -172,6 +201,7 @@ static const std::array<Instruction, 0xFF> INSTRUCTIONS = [] {
     temp[0xF2] = Instruction{IN_LD, AM_R_MR, R_A, R_C};
     temp[0xF3] = Instruction{IN_DI};
     temp[0xF5] = Instruction{IN_PUSH, AM_R, R_AF};
+    temp[0xF6] = Instruction{IN_OR, AM_R_N8, R_A};
     temp[0xF7] = Instruction{IN_RST, AM_R, R_PC, R_NONE, C_NONE, 0x30};
     temp[0xF9] = Instruction{IN_LD, AM_R_R, R_SP, R_HL};
     temp[0xFA] = Instruction{IN_LD, AM_R_MN16, R_A};
@@ -264,6 +294,12 @@ void Cpu::runInstruction() {
         case IN_XOR:
             XOR();
             break;
+        case IN_AND:
+            AND();
+            break;
+        case IN_OR:
+            OR();
+            break;
         case IN_DI:
             di();
             break;
@@ -332,6 +368,34 @@ void Cpu::XOR() {
     Cpu::clearFlag(F_C);
     Cpu::clearFlag(F_H);
     if(result == 0) {
+        Cpu::setFlag(F_Z);
+    } else {
+        Cpu::clearFlag(F_Z);
+    }
+    putData(result);
+}
+
+void Cpu::AND() {
+    u16 result = m_curInstData.param1 & m_curInstData.param2;
+    Cpu::clearFlag(F_N);
+    Cpu::clearFlag(F_C);
+    Cpu::setFlag(F_H);
+    if(result == 0) {
+        Cpu::setFlag(F_Z);
+    } else {
+        Cpu::clearFlag(F_Z);
+    }
+    putData(result);
+}
+
+void Cpu::OR() {
+    u16 result = m_curInstData.param1 | m_curInstData.param2;
+    Cpu::clearFlag(F_N);
+    Cpu::clearFlag(F_C);
+    Cpu::clearFlag(F_H);
+    if(result == 0) {
+        Cpu::setFlag(F_Z);
+    } else {
         Cpu::clearFlag(F_Z);
     }
     putData(result);
