@@ -160,6 +160,7 @@ class Cpu {
         void writeIERegister(u8 data);
         void pushStack(u8 data);
         u8 popStack();
+        void jumpToAddress(u16 address, bool shouldJump, bool pushPC);
 
     private:
         Emu* m_emu;
@@ -176,6 +177,7 @@ class Cpu {
         void dec();
         void XOR();
         void jmp();
+        void call();
         void ld();
         void ldh();
         void push();

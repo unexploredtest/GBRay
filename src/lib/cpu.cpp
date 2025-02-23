@@ -127,11 +127,16 @@ static const std::array<Instruction, 0xFF> INSTRUCTIONS = [] {
     
     // 0xC0
     temp[0xC1] = Instruction{IN_POP, AM_R, R_BC};
+    temp[0xC4] = Instruction{IN_CALL, AM_R_MN16, R_PC, R_NONE, C_NZ};
     temp[0xC5] = Instruction{IN_PUSH, AM_R, R_BC};
+    temp[0xCC] = Instruction{IN_CALL, AM_R_MN16, R_PC, R_NONE, C_Z};
+    temp[0xCC] = Instruction{IN_CALL, AM_R_MN16, R_PC, R_NONE, C_NONE};
 
     // 0xD0
     temp[0xD1] = Instruction{IN_POP, AM_R, R_DE};
+    temp[0xD4] = Instruction{IN_CALL, AM_R_MN16, R_PC, R_NONE, C_NC};
     temp[0xD5] = Instruction{IN_PUSH, AM_R, R_DE};
+    temp[0xDC] = Instruction{IN_CALL, AM_R_MN16, R_PC, R_NONE, C_C};
 
     // 0xE0
     temp[0xE0] = Instruction{IN_LDH, AM_MN8_R, R_A};
@@ -294,10 +299,15 @@ void Cpu::XOR() {
 
 void Cpu::jmp() {
     // putData(m_curInstData.param2);
-    if(checkCond()) {
-        writeReg(R_PC, m_curInstData.param2);
-    }
-    cycle(1);   
+    // if(checkCond()) {
+    //     writeReg(R_PC, m_curInstData.param2);
+    // }
+    // cycle(1);   
+    jumpToAddress(m_curInstData.param2, checkCond(), false);
+}
+
+void Cpu::call() {
+    jumpToAddress(m_curInstData.param2, checkCond(), true);
 }
 
 void Cpu::di() {
@@ -749,4 +759,25 @@ u8 Cpu::popStack() {
     u8 data = m_emu->getBus()->read(m_regs.SP);
     m_regs.SP++;
     return data;
+}
+
+void Cpu::jumpToAddress(u16 address, bool shouldJump, bool pushPC) {
+    if(shouldJump) {
+        writeReg(R_PC, m_curInstData.param2);
+        cycle(1);
+
+        if(pushPC) {
+            u8 high = (m_regs.PC >> 8) && 0xFF;
+            cycle(1);
+            pushStack(high);
+            
+        
+            u8 low = m_regs.PC && 0xFF;
+            cycle(1);
+            pushStack(low);
+            
+            cycle(1);
+        }
+    }
+    
 }
