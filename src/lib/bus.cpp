@@ -34,6 +34,8 @@ u8 Bus::read(u16 address) {
     } else if(address == 0xFFFF) { // IE Register
         return m_emu->getCpu()->readIERegister();
     }
+
+    return 0; // For unsupported bus reads
 }
 
 void Bus::write(u16 address, u8 value) {

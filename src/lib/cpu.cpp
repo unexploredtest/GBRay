@@ -525,6 +525,7 @@ void Cpu::putData(u16 data) {
         case AM_MN8_R:
         case AM_MN16_R:
             m_emu->getBus()->write(m_curInstData.param1, data);
+            break;
         default:
             throw std::runtime_error("ERROR: No such addressing mode");
     }
@@ -763,21 +764,18 @@ u8 Cpu::popStack() {
 
 void Cpu::jumpToAddress(u16 address, bool shouldJump, bool pushPC) {
     if(shouldJump) {
-        writeReg(R_PC, m_curInstData.param2);
-        cycle(1);
-
         if(pushPC) {
             u8 high = (m_regs.PC >> 8) && 0xFF;
-            cycle(1);
             pushStack(high);
-            
-        
+                  
             u8 low = m_regs.PC && 0xFF;
-            cycle(1);
             pushStack(low);
-            
-            cycle(1);
+
+            cycle(2);
         }
+
+        writeReg(R_PC, m_curInstData.param2);
+        cycle(1);
     }
     
 }
