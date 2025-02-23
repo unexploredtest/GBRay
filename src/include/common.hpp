@@ -12,6 +12,8 @@ using u16 = uint16_t;
 using u32 = uint32_t;
 using u64 = uint64_t;
 
+using i8 = int8_t;
+
 // Declared here so that one can use the other in their definition
 class Cart;
 class Emu;

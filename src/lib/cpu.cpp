@@ -23,30 +23,35 @@ static const std::array<Instruction, 0xFF> INSTRUCTIONS = [] {
     temp[0x14] = Instruction{IN_INC, AM_R, R_D};
     temp[0x15] = Instruction{IN_DEC, AM_R, R_D};
     temp[0x16] = Instruction{IN_LD, AM_R_N8, R_D};
+    temp[0x18] = Instruction{IN_JR, AM_R_N8, R_PC, R_NONE, C_NONE};
     temp[0x1A] = Instruction{IN_LD, AM_R_MR, R_A, R_DE};
     temp[0x1B] = Instruction{IN_DEC, AM_R, R_DE};
     temp[0x1C] = Instruction{IN_INC, AM_R, R_E};
     temp[0x1D] = Instruction{IN_DEC, AM_R, R_E};
     temp[0x1E] = Instruction{IN_LD, AM_R_N8, R_E};
     // 0x20
+    temp[0x20] = Instruction{IN_JR, AM_R_N8, R_PC, R_NONE, C_NZ};
     temp[0x21] = Instruction{IN_LD, AM_R_N16, R_HL};
     temp[0x22] = Instruction{IN_LD, AM_HLI_R, R_HL, R_A};
     temp[0x23] = Instruction{IN_INC, AM_R, R_HL};
     temp[0x24] = Instruction{IN_INC, AM_R, R_H};
     temp[0x25] = Instruction{IN_DEC, AM_R, R_H};
     temp[0x26] = Instruction{IN_LD, AM_R_N8, R_H};
+    temp[0x28] = Instruction{IN_JR, AM_R_N8, R_PC, R_NONE, C_Z};
     temp[0x2A] = Instruction{IN_LD, AM_R_HLI, R_A, R_HL};
     temp[0x2B] = Instruction{IN_DEC, AM_R, R_HL};
     temp[0x2C] = Instruction{IN_INC, AM_R, R_L};
     temp[0x2D] = Instruction{IN_DEC, AM_R, R_L};
     temp[0x2E] = Instruction{IN_LD, AM_R_N8, R_L};
     // 0x30
+    temp[0x30] = Instruction{IN_JR, AM_R_N8, R_PC, R_NONE, C_NC};
     temp[0x31] = Instruction{IN_LD, AM_R_N16, R_SP};
     temp[0x32] = Instruction{IN_LD, AM_HLD_R, R_HL, R_A};
     temp[0x33] = Instruction{IN_INC, AM_R, R_SP};
     temp[0x34] = Instruction{IN_INC, AM_MR, R_HL};
     temp[0x35] = Instruction{IN_DEC, AM_MR, R_HL};
     temp[0x36] = Instruction{IN_LD, AM_MR_N8, R_HL};
+    temp[0x38] = Instruction{IN_JR, AM_R_N8, R_PC, R_NONE, C_C};
     temp[0x3A] = Instruction{IN_LD, AM_R_HLD, R_A, R_HL};
     temp[0x3B] = Instruction{IN_DEC, AM_R, R_SP};
     temp[0x3C] = Instruction{IN_INC, AM_R, R_A};
@@ -220,6 +225,9 @@ void Cpu::runInstruction() {
         case IN_JP:
             jmp();
             break;
+        case IN_JR:
+            jr();
+            break;
         case IN_LD:
             ld();
             break;
@@ -335,6 +343,12 @@ void Cpu::jmp() {
     // }
     // cycle(1);   
     jumpToAddress(m_curInstData.param2, checkCond(), false);
+}
+
+void Cpu::jr() {
+    i8 offset = (m_curInstData.param2 && 0xFF);
+    u16 address = m_regs.PC + offset;
+    jumpToAddress(address, checkCond(), false);
 }
 
 void Cpu::call() {

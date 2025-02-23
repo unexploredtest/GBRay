@@ -177,6 +177,7 @@ class Cpu {
         void dec();
         void XOR();
         void jmp();
+        void jr();
         void call();
         void ret();
         void reti();
