@@ -178,6 +178,8 @@ class Cpu {
         void XOR();
         void jmp();
         void call();
+        void ret();
+        void reti();
         void ld();
         void ldh();
         void push();

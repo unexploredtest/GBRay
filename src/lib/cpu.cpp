@@ -126,16 +126,22 @@ static const std::array<Instruction, 0xFF> INSTRUCTIONS = [] {
     temp[0xC3] = Instruction{IN_JP, AM_R_N16, R_PC};
     
     // 0xC0
+    temp[0xC0] = Instruction{IN_RET, AM_R, R_PC, R_NONE, C_NZ};
     temp[0xC1] = Instruction{IN_POP, AM_R, R_BC};
     temp[0xC4] = Instruction{IN_CALL, AM_R_MN16, R_PC, R_NONE, C_NZ};
     temp[0xC5] = Instruction{IN_PUSH, AM_R, R_BC};
+    temp[0xC8] = Instruction{IN_RET, AM_R, R_PC, R_NONE, C_Z};
+    temp[0xC9] = Instruction{IN_RET, AM_R, R_PC, R_NONE, C_NONE};
     temp[0xCC] = Instruction{IN_CALL, AM_R_MN16, R_PC, R_NONE, C_Z};
-    temp[0xCC] = Instruction{IN_CALL, AM_R_MN16, R_PC, R_NONE, C_NONE};
+    temp[0xCD] = Instruction{IN_CALL, AM_R_MN16, R_PC, R_NONE, C_NONE};
 
     // 0xD0
+    temp[0xD0] = Instruction{IN_RET, AM_R, R_PC, R_NONE, C_NC};
     temp[0xD1] = Instruction{IN_POP, AM_R, R_DE};
     temp[0xD4] = Instruction{IN_CALL, AM_R_MN16, R_PC, R_NONE, C_NC};
     temp[0xD5] = Instruction{IN_PUSH, AM_R, R_DE};
+    temp[0xD8] = Instruction{IN_RET, AM_R, R_PC, R_NONE, C_C};
+    temp[0xD9] = Instruction{IN_RETI, AM_R, R_PC, R_NONE, C_NONE};
     temp[0xDC] = Instruction{IN_CALL, AM_R_MN16, R_PC, R_NONE, C_C};
 
     // 0xE0
@@ -212,6 +218,15 @@ void Cpu::runInstruction() {
             break;
         case IN_POP:
             pop();
+            break;
+        case IN_CALL:
+            call();
+            break;
+        case IN_RET:
+            ret();
+            break;
+        case IN_RETI:
+            reti();
             break;
         case IN_INC:
             inc();
@@ -308,6 +323,27 @@ void Cpu::jmp() {
 
 void Cpu::call() {
     jumpToAddress(m_curInstData.param2, checkCond(), true);
+}
+
+void Cpu::ret() {
+    if(m_curInst.cond != C_NONE) {
+        cycle(1);
+    }
+
+    if(checkCond()) {
+        u16 low = popStack();
+        cycle(1);
+        u16 high = popStack();
+        cycle(1);
+    
+        u16 address = low | (high << 8);
+        jumpToAddress(address, true, false);
+    }
+}
+
+void Cpu::reti() {
+    m_intMasterEnabled = true;
+    ret();
 }
 
 void Cpu::di() {
@@ -765,13 +801,13 @@ u8 Cpu::popStack() {
 void Cpu::jumpToAddress(u16 address, bool shouldJump, bool pushPC) {
     if(shouldJump) {
         if(pushPC) {
+            cycle(2);
             u8 high = (m_regs.PC >> 8) && 0xFF;
             pushStack(high);
                   
             u8 low = m_regs.PC && 0xFF;
             pushStack(low);
-
-            cycle(2);
+            
         }
 
         writeReg(R_PC, m_curInstData.param2);
