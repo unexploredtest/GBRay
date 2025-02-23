@@ -285,14 +285,14 @@ void Cpu::inc() {
     u16 result = m_curInstData.param1 + 1;
     
     if(m_curInst.addrMode == AM_MR || (m_curInst.addrMode == AM_R &&
-        !(m_curInst.reg1 == R_BC || m_curInst.reg1 == R_DE || m_curInst.reg1 == R_SP))) {
+        !(m_curInst.reg1 == R_BC || m_curInst.reg1 == R_DE || m_curInst.reg1 == R_HL || m_curInst.reg1 == R_SP))) {
         clearFlag(F_N);
         if(result == 0) {
             setFlag(F_Z);
         } else {
             clearFlag(F_Z);
         }
-        if(m_curInstData.param1 && 0b1111 == 0b1111) {
+        if((m_curInstData.param1 & 0b1111) == 0b1111) {
             setFlag(F_H);
         } else {
             clearFlag(F_H);
@@ -307,14 +307,15 @@ void Cpu::dec() {
     u16 result = m_curInstData.param1 - 1;
     
     if(m_curInst.addrMode == AM_MR || (m_curInst.addrMode == AM_R &&
-        !(m_curInst.reg1 == R_BC || m_curInst.reg1 == R_DE || m_curInst.reg1 == R_SP))) {
+        !(m_curInst.reg1 == R_BC || m_curInst.reg1 == R_DE || m_curInst.reg1 == R_HL || m_curInst.reg1 == R_SP))) {
         clearFlag(F_N);
         if(result == 0) {
             setFlag(F_Z);
         } else {
             clearFlag(F_Z);
         }
-        if(m_curInstData.param1 && 0b1111 == 0b0000) {
+
+        if((m_curInstData.param1 & 0b1111) == 0b0000) {
             setFlag(F_H);
         } else {
             clearFlag(F_H);
@@ -346,7 +347,7 @@ void Cpu::jmp() {
 }
 
 void Cpu::jr() {
-    i8 offset = (m_curInstData.param2 && 0xFF);
+    i8 offset = (m_curInstData.param2 & 0xFF);
     u16 address = m_regs.PC + offset;
     jumpToAddress(address, checkCond(), false);
 }
@@ -844,7 +845,7 @@ void Cpu::jumpToAddress(u16 address, bool shouldJump, bool pushPC) {
             
         }
 
-        writeReg(R_PC, m_curInstData.param2);
+        writeReg(R_PC, address);
         cycle(1);
     }
     
