@@ -180,6 +180,7 @@ class Cpu {
         void call();
         void ret();
         void reti();
+        void rst();
         void ld();
         void ldh();
         void push();

@@ -130,34 +130,42 @@ static const std::array<Instruction, 0xFF> INSTRUCTIONS = [] {
     temp[0xC1] = Instruction{IN_POP, AM_R, R_BC};
     temp[0xC4] = Instruction{IN_CALL, AM_R_MN16, R_PC, R_NONE, C_NZ};
     temp[0xC5] = Instruction{IN_PUSH, AM_R, R_BC};
+    temp[0xC7] = Instruction{IN_RST, AM_R, R_PC, R_NONE, C_NONE, 0x00};
     temp[0xC8] = Instruction{IN_RET, AM_R, R_PC, R_NONE, C_Z};
     temp[0xC9] = Instruction{IN_RET, AM_R, R_PC, R_NONE, C_NONE};
     temp[0xCC] = Instruction{IN_CALL, AM_R_MN16, R_PC, R_NONE, C_Z};
     temp[0xCD] = Instruction{IN_CALL, AM_R_MN16, R_PC, R_NONE, C_NONE};
+    temp[0xCF] = Instruction{IN_RST, AM_R, R_PC, R_NONE, C_NONE, 0x08};
 
     // 0xD0
     temp[0xD0] = Instruction{IN_RET, AM_R, R_PC, R_NONE, C_NC};
     temp[0xD1] = Instruction{IN_POP, AM_R, R_DE};
     temp[0xD4] = Instruction{IN_CALL, AM_R_MN16, R_PC, R_NONE, C_NC};
     temp[0xD5] = Instruction{IN_PUSH, AM_R, R_DE};
+    temp[0xD7] = Instruction{IN_RST, AM_R, R_PC, R_NONE, C_NONE, 0x10};
     temp[0xD8] = Instruction{IN_RET, AM_R, R_PC, R_NONE, C_C};
     temp[0xD9] = Instruction{IN_RETI, AM_R, R_PC, R_NONE, C_NONE};
     temp[0xDC] = Instruction{IN_CALL, AM_R_MN16, R_PC, R_NONE, C_C};
+    temp[0xDF] = Instruction{IN_RST, AM_R, R_PC, R_NONE, C_NONE, 0x18};
 
     // 0xE0
     temp[0xE0] = Instruction{IN_LDH, AM_MN8_R, R_A};
     temp[0xE1] = Instruction{IN_POP, AM_R, R_HL};
     temp[0xE2] = Instruction{IN_LD, AM_MR_R, R_C, R_A};
     temp[0xE5] = Instruction{IN_PUSH, AM_R, R_HL};
+    temp[0xE7] = Instruction{IN_RST, AM_R, R_PC, R_NONE, C_NONE, 0x20};
     temp[0xEA] = Instruction{IN_LD, AM_MN16_R, R_A};
+    temp[0xEF] = Instruction{IN_RST, AM_R, R_PC, R_NONE, C_NONE, 0x28};
     // 0xF0
     temp[0xF0] = Instruction{IN_LDH, AM_R_MN8, R_A};
     temp[0xF1] = Instruction{IN_POP, AM_R, R_AF};
     temp[0xF2] = Instruction{IN_LD, AM_R_MR, R_A, R_C};
     temp[0xF3] = Instruction{IN_DI};
     temp[0xF5] = Instruction{IN_PUSH, AM_R, R_AF};
+    temp[0xF7] = Instruction{IN_RST, AM_R, R_PC, R_NONE, C_NONE, 0x30};
     temp[0xF9] = Instruction{IN_LD, AM_R_R, R_SP, R_HL};
     temp[0xFA] = Instruction{IN_LD, AM_R_MN16, R_A};
+    temp[0xFF] = Instruction{IN_RST, AM_R, R_PC, R_NONE, C_NONE, 0x38};
 
     return temp;
 }();
@@ -227,6 +235,9 @@ void Cpu::runInstruction() {
             break;
         case IN_RETI:
             reti();
+            break;
+        case IN_RST:
+            rst();
             break;
         case IN_INC:
             inc();
@@ -344,6 +355,10 @@ void Cpu::ret() {
 void Cpu::reti() {
     m_intMasterEnabled = true;
     ret();
+}
+
+void Cpu::rst() {
+    jumpToAddress(m_curInst.param, checkCond(), true);
 }
 
 void Cpu::di() {
