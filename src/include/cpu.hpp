@@ -173,6 +173,9 @@ class Cpu {
         Instruction m_curInst;
         InstructionData m_curInstData;
         void add();
+        void adc();
+        void sub();
+        void sbc();
         void inc();
         void dec();
         void XOR();
