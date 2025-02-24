@@ -161,27 +161,27 @@ static const std::array<Instruction, 0xFF> INSTRUCTIONS = [] {
     temp[0xC1] = Instruction{IN_POP, AM_R, R_BC};
     temp[0xC2] = Instruction{IN_JP, AM_R_N16, R_PC, R_NONE, C_NZ};
     temp[0xC3] = Instruction{IN_JP, AM_R_N16, R_PC};
-    temp[0xC4] = Instruction{IN_CALL, AM_R_MN16, R_PC, R_NONE, C_NZ};
+    temp[0xC4] = Instruction{IN_CALL, AM_R_N16, R_PC, R_NONE, C_NZ};
     temp[0xC5] = Instruction{IN_PUSH, AM_R, R_BC};
     temp[0xC7] = Instruction{IN_RST, AM_R, R_PC, R_NONE, C_NONE, 0x00};
     temp[0xC8] = Instruction{IN_RET, AM_R, R_PC, R_NONE, C_Z};
     temp[0xC9] = Instruction{IN_RET, AM_R, R_PC, R_NONE, C_NONE};
     temp[0xCA] = Instruction{IN_JP, AM_R_N16, R_PC, R_NONE, C_Z};
-    temp[0xCC] = Instruction{IN_CALL, AM_R_MN16, R_PC, R_NONE, C_Z};
-    temp[0xCD] = Instruction{IN_CALL, AM_R_MN16, R_PC, R_NONE, C_NONE};
+    temp[0xCC] = Instruction{IN_CALL, AM_R_N16, R_PC, R_NONE, C_Z};
+    temp[0xCD] = Instruction{IN_CALL, AM_R_N16, R_PC, R_NONE, C_NONE};
     temp[0xCF] = Instruction{IN_RST, AM_R, R_PC, R_NONE, C_NONE, 0x08};
 
     // 0xD0
     temp[0xD0] = Instruction{IN_RET, AM_R, R_PC, R_NONE, C_NC};
     temp[0xD1] = Instruction{IN_POP, AM_R, R_DE};
     temp[0xD2] = Instruction{IN_JP, AM_R_N16, R_PC, R_NONE, C_NC};
-    temp[0xD4] = Instruction{IN_CALL, AM_R_MN16, R_PC, R_NONE, C_NC};
+    temp[0xD4] = Instruction{IN_CALL, AM_R_N16, R_PC, R_NONE, C_NC};
     temp[0xD5] = Instruction{IN_PUSH, AM_R, R_DE};
     temp[0xD7] = Instruction{IN_RST, AM_R, R_PC, R_NONE, C_NONE, 0x10};
     temp[0xD8] = Instruction{IN_RET, AM_R, R_PC, R_NONE, C_C};
     temp[0xD9] = Instruction{IN_RETI, AM_R, R_PC, R_NONE, C_NONE};
     temp[0xDA] = Instruction{IN_JP, AM_R_N16, R_PC, R_NONE, C_C};
-    temp[0xDC] = Instruction{IN_CALL, AM_R_MN16, R_PC, R_NONE, C_C};
+    temp[0xDC] = Instruction{IN_CALL, AM_R_N16, R_PC, R_NONE, C_C};
     temp[0xDF] = Instruction{IN_RST, AM_R, R_PC, R_NONE, C_NONE, 0x18};
 
     // 0xE0
@@ -464,12 +464,12 @@ void Cpu::ldh() {
 }
 
 void Cpu::push() {
-    u8 high = (m_curInstData.param1 >> 8) && 0xFF;
+    u8 high = (m_curInstData.param1 >> 8) & 0xFF;
     cycle(1);
     pushStack(high);
     
 
-    u8 low = m_curInstData.param1 && 0xFF;
+    u8 low = m_curInstData.param1 & 0xFF;
     cycle(1);
     pushStack(low);
     
@@ -901,10 +901,10 @@ void Cpu::jumpToAddress(u16 address, bool shouldJump, bool pushPC) {
     if(shouldJump) {
         if(pushPC) {
             cycle(2);
-            u8 high = (m_regs.PC >> 8) && 0xFF;
+            u8 high = (m_regs.PC >> 8) & 0xFF;
             pushStack(high);
                   
-            u8 low = m_regs.PC && 0xFF;
+            u8 low = m_regs.PC & 0xFF;
             pushStack(low);
             
         }
