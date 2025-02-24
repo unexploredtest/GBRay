@@ -11,6 +11,7 @@ static const std::array<Instruction, 0xFF> INSTRUCTIONS = [] {
     temp[0x05] = Instruction{IN_DEC, AM_R, R_B};
     temp[0x06] = Instruction{IN_LD, AM_R_N8, R_B};
     temp[0x08] = Instruction{IN_LD, AM_MN16_R, R_SP};
+    temp[0x09] = Instruction{IN_ADD, AM_R_R, R_HL, R_BC};
     temp[0x0A] = Instruction{IN_LD, AM_R_MR, R_A, R_BC};
     temp[0x0B] = Instruction{IN_DEC, AM_R, R_BC};
     temp[0x0C] = Instruction{IN_INC, AM_R, R_C};
@@ -24,6 +25,7 @@ static const std::array<Instruction, 0xFF> INSTRUCTIONS = [] {
     temp[0x15] = Instruction{IN_DEC, AM_R, R_D};
     temp[0x16] = Instruction{IN_LD, AM_R_N8, R_D};
     temp[0x18] = Instruction{IN_JR, AM_R_N8, R_PC, R_NONE, C_NONE};
+    temp[0x19] = Instruction{IN_ADD, AM_R_R, R_HL, R_DE};
     temp[0x1A] = Instruction{IN_LD, AM_R_MR, R_A, R_DE};
     temp[0x1B] = Instruction{IN_DEC, AM_R, R_DE};
     temp[0x1C] = Instruction{IN_INC, AM_R, R_E};
@@ -38,6 +40,7 @@ static const std::array<Instruction, 0xFF> INSTRUCTIONS = [] {
     temp[0x25] = Instruction{IN_DEC, AM_R, R_H};
     temp[0x26] = Instruction{IN_LD, AM_R_N8, R_H};
     temp[0x28] = Instruction{IN_JR, AM_R_N8, R_PC, R_NONE, C_Z};
+    temp[0x29] = Instruction{IN_ADD, AM_R_R, R_HL, R_HL};
     temp[0x2A] = Instruction{IN_LD, AM_R_HLI, R_A, R_HL};
     temp[0x2B] = Instruction{IN_DEC, AM_R, R_HL};
     temp[0x2C] = Instruction{IN_INC, AM_R, R_L};
@@ -52,6 +55,7 @@ static const std::array<Instruction, 0xFF> INSTRUCTIONS = [] {
     temp[0x35] = Instruction{IN_DEC, AM_MR, R_HL};
     temp[0x36] = Instruction{IN_LD, AM_MR_N8, R_HL};
     temp[0x38] = Instruction{IN_JR, AM_R_N8, R_PC, R_NONE, C_C};
+    temp[0x39] = Instruction{IN_ADD, AM_R_R, R_HL, R_SP};
     temp[0x3A] = Instruction{IN_LD, AM_R_HLD, R_A, R_HL};
     temp[0x3B] = Instruction{IN_DEC, AM_R, R_SP};
     temp[0x3C] = Instruction{IN_INC, AM_R, R_A};
@@ -127,6 +131,13 @@ static const std::array<Instruction, 0xFF> INSTRUCTIONS = [] {
     temp[0x7F] = Instruction{IN_LD, AM_R_R, R_A, R_A};
     // 0x80
     temp[0x80] = Instruction{IN_ADD, AM_R_R, R_A, R_B};
+    temp[0x81] = Instruction{IN_ADD, AM_R_R, R_A, R_C};
+    temp[0x82] = Instruction{IN_ADD, AM_R_R, R_A, R_D};
+    temp[0x83] = Instruction{IN_ADD, AM_R_R, R_A, R_E};
+    temp[0x84] = Instruction{IN_ADD, AM_R_R, R_A, R_H};
+    temp[0x85] = Instruction{IN_ADD, AM_R_R, R_A, R_L};
+    temp[0x86] = Instruction{IN_ADD, AM_R_MR, R_A, R_HL};
+    temp[0x87] = Instruction{IN_ADD, AM_R_R, R_A, R_A};
 
     // 0xA0
     temp[0xA0] = Instruction{IN_AND, AM_R_R, R_A, R_B};
@@ -163,6 +174,7 @@ static const std::array<Instruction, 0xFF> INSTRUCTIONS = [] {
     temp[0xC3] = Instruction{IN_JP, AM_R_N16, R_PC};
     temp[0xC4] = Instruction{IN_CALL, AM_R_N16, R_PC, R_NONE, C_NZ};
     temp[0xC5] = Instruction{IN_PUSH, AM_R, R_BC};
+    temp[0xC6] = Instruction{IN_ADD, AM_R_N8, R_A};
     temp[0xC7] = Instruction{IN_RST, AM_R, R_PC, R_NONE, C_NONE, 0x00};
     temp[0xC8] = Instruction{IN_RET, AM_R, R_PC, R_NONE, C_Z};
     temp[0xC9] = Instruction{IN_RET, AM_R, R_PC, R_NONE, C_NONE};
@@ -191,6 +203,7 @@ static const std::array<Instruction, 0xFF> INSTRUCTIONS = [] {
     temp[0xE5] = Instruction{IN_PUSH, AM_R, R_HL};
     temp[0xE6] = Instruction{IN_AND, AM_R_N8, R_A};
     temp[0xE7] = Instruction{IN_RST, AM_R, R_PC, R_NONE, C_NONE, 0x20};
+    temp[0xE8] = Instruction{IN_ADD, AM_R_N8, R_SP};
     temp[0xE9] = Instruction{IN_JP, AM_R_R, R_PC, R_HL};
     temp[0xEA] = Instruction{IN_LD, AM_MN16_R, R_A};
     temp[0xEE] = Instruction{IN_XOR, AM_R_N8, R_A};
@@ -311,7 +324,37 @@ void Cpu::runInstruction() {
 void Cpu::add() {
     u16 result = m_curInstData.param1 + m_curInstData.param2;
     Cpu::clearFlag(F_N);
-    if(result == 0) {
+    Cpu::clearFlag(F_H);
+    Cpu::clearFlag(F_C);
+
+    if(m_curInst.reg1 != R_HL) {
+        
+        if(result == 0) {
+            Cpu::clearFlag(F_Z);
+        }
+
+        if((m_curInstData.param1 & 0xF + m_curInstData.param2 & 0xF) >= 0x10) {
+            Cpu::setFlag(F_H);
+        }
+
+        if((m_curInstData.param1 & 0xFF + m_curInstData.param2 & 0xFF) >= 0x100) {
+            Cpu::setFlag(F_C);
+        }
+    } else {
+        u32 param1 = m_curInstData.param1;
+        u32 param2 = m_curInstData.param2;
+        if((param1 & 0xFFF + param2 & 0xFFF) >= 0x1000) {
+            Cpu::setFlag(F_H);
+        }
+
+        if((param1 & 0xFFFF + param2 & 0xFFFF) >= 0x10000) {
+            Cpu::setFlag(F_C);
+        }
+    }
+
+    if(m_curInst.reg1 == R_SP) {
+        i8 value = m_curInstData.param2;
+        result = m_curInstData.param1 + value;
         Cpu::clearFlag(F_Z);
     }
     putData(result);
