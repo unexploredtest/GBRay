@@ -251,6 +251,7 @@ static const std::array<Instruction, 0xFF> INSTRUCTIONS = [] {
     temp[0xF5] = Instruction{IN_PUSH, AM_R, R_AF};
     temp[0xF6] = Instruction{IN_OR, AM_R_N8, R_A};
     temp[0xF7] = Instruction{IN_RST, AM_R, R_PC, R_NONE, C_NONE, 0x30};
+    temp[0xF8] = Instruction{IN_LD, AM_R_R, R_HL, R_SP};
     temp[0xF9] = Instruction{IN_LD, AM_R_R, R_SP, R_HL};
     temp[0xFA] = Instruction{IN_LD, AM_R_MN16, R_A};
     temp[0xFE] = Instruction{IN_CP, AM_R_N8, R_A};
@@ -640,7 +641,32 @@ void Cpu::ld() {
     if(m_curInst.addrMode == AM_MR_R && m_curInst.reg1 == R_C) {
         m_curInstData.param1 += 0xFF00;
     }
-    putData(m_curInstData.param2);
+
+    if(m_curInst.reg2 == R_SP) {
+        // Because this is a unique addressing mode (2 regs and e8) we just
+        // read the value here instead of complicating the code and creating
+        // another addressing mode just for this
+        u8 value = m_emu->getBus()->read(m_regs.PC);
+        m_regs.PC++;
+        cycle(1);
+
+        u16 result = m_curInstData.param1 + (i8)value;
+        Cpu::clearFlag(F_Z);
+        Cpu::clearFlag(F_N);
+        Cpu::clearFlag(F_H);
+        Cpu::clearFlag(F_C);
+        if((m_curInstData.param1 & 0xF + m_curInstData.param2 & 0xF) >= 0x10) {
+            Cpu::setFlag(F_H);
+        }
+
+        if((m_curInstData.param1 & 0xFF + m_curInstData.param2 & 0xFF) >= 0x100) {
+            Cpu::setFlag(F_C);
+        }
+        putData(result);
+    } else {
+        putData(m_curInstData.param2);
+    }
+    
     
     cycle(1);
 }
