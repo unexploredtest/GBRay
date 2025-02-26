@@ -190,6 +190,14 @@ static const std::array<Instruction, 0xFF> INSTRUCTIONS = [] {
     temp[0xB5] = Instruction{IN_OR, AM_R_R, R_A, R_L};
     temp[0xB6] = Instruction{IN_OR, AM_R_MR, R_A, R_HL};
     temp[0xB7] = Instruction{IN_OR, AM_R_R, R_A, R_A};
+    temp[0xB8] = Instruction{IN_CP, AM_R_R, R_A, R_B};
+    temp[0xB9] = Instruction{IN_CP, AM_R_R, R_A, R_C};
+    temp[0xBA] = Instruction{IN_CP, AM_R_R, R_A, R_D};
+    temp[0xBB] = Instruction{IN_CP, AM_R_R, R_A, R_E};
+    temp[0xBC] = Instruction{IN_CP, AM_R_R, R_A, R_H};
+    temp[0xBD] = Instruction{IN_CP, AM_R_R, R_A, R_L};
+    temp[0xBE] = Instruction{IN_CP, AM_R_MR, R_A, R_HL};
+    temp[0xBF] = Instruction{IN_CP, AM_R_R, R_A, R_A};
 
     // 0xC0
     temp[0xC0] = Instruction{IN_RET, AM_R, R_PC, R_NONE, C_NZ};
@@ -245,6 +253,7 @@ static const std::array<Instruction, 0xFF> INSTRUCTIONS = [] {
     temp[0xF7] = Instruction{IN_RST, AM_R, R_PC, R_NONE, C_NONE, 0x30};
     temp[0xF9] = Instruction{IN_LD, AM_R_R, R_SP, R_HL};
     temp[0xFA] = Instruction{IN_LD, AM_R_MN16, R_A};
+    temp[0xFE] = Instruction{IN_CP, AM_R_N8, R_A};
     temp[0xFF] = Instruction{IN_RST, AM_R, R_PC, R_NONE, C_NONE, 0x38};
 
     return temp;
@@ -273,7 +282,7 @@ void Cpu::step() {
     } catch (std::string error) {
         
     }
-    std::cin.get();
+    // std::cin.get();
 }
 
 void Cpu::cycle(int ticks) {
@@ -349,7 +358,10 @@ void Cpu::runInstruction() {
         case IN_OR:
             OR();
             break;
-        case IN_DI:
+        case IN_CP:
+            CP();
+            break;
+        case IN_DI: 
             di();
             break;
         default:
@@ -549,6 +561,24 @@ void Cpu::OR() {
         Cpu::clearFlag(F_Z);
     }
     putData(result);
+}
+
+void Cpu::CP() {
+    Cpu::clearFlag(F_Z);
+    Cpu::setFlag(F_N);
+    Cpu::clearFlag(F_C);
+    Cpu::clearFlag(F_H);
+    if(m_curInstData.param1 == m_curInstData.param2) {
+        Cpu::setFlag(F_Z);
+    }
+
+    if(m_curInstData.param1 < m_curInstData.param2) {
+        Cpu::setFlag(F_C);
+    }
+
+    if((m_curInstData.param1 & 0x1111) < (m_curInstData.param2 & 0x1111)) {
+        Cpu::setFlag(F_H);
+    }
 }
 
 void Cpu::jmp() {
