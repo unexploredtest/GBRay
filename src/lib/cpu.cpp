@@ -406,6 +406,13 @@ void Cpu::add() {
         i8 value = m_curInstData.param2;
         result = m_curInstData.param1 + value;
         Cpu::clearFlag(F_Z);
+        if((m_curInstData.param1 & 0xF + m_curInstData.param2 & 0xF) >= 0x10) {
+            Cpu::setFlag(F_H);
+        }
+
+        if((m_curInstData.param1 & 0xFF + m_curInstData.param2 & 0xFF) >= 0x100) {
+            Cpu::setFlag(F_C);
+        }
     }
     putData(result);
 }
