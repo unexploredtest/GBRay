@@ -576,7 +576,7 @@ void Cpu::CP() {
         Cpu::setFlag(F_C);
     }
 
-    if((m_curInstData.param1 & 0x1111) < (m_curInstData.param2 & 0x1111)) {
+    if((m_curInstData.param1 & 0b1111) < (m_curInstData.param2 & 0b1111)) {
         Cpu::setFlag(F_H);
     }
 }
