@@ -376,47 +376,47 @@ void Cpu::runInstruction() {
 
 void Cpu::add() {
     u16 result = m_curInstData.param1 + m_curInstData.param2;
-    Cpu::clearFlag(F_N);
-    Cpu::clearFlag(F_H);
-    Cpu::clearFlag(F_C);
+    clearFlag(F_N);
+    clearFlag(F_H);
+    clearFlag(F_C);
 
     if(m_curInst.reg1 != R_HL) {
         
         if(result == 0) {
-            Cpu::setFlag(F_Z);
+            setFlag(F_Z);
         } else {
-            Cpu::clearFlag(F_Z);
+            clearFlag(F_Z);
         }
 
         if((m_curInstData.param1 & 0xF + m_curInstData.param2 & 0xF) >= 0x10) {
-            Cpu::setFlag(F_H);
+            setFlag(F_H);
         }
 
         if((m_curInstData.param1 & 0xFF + m_curInstData.param2 & 0xFF) >= 0x100) {
-            Cpu::setFlag(F_C);
+            setFlag(F_C);
         }
     } else {
         u32 param1 = m_curInstData.param1;
         u32 param2 = m_curInstData.param2;
         if((param1 & 0xFFF + param2 & 0xFFF) >= 0x1000) {
-            Cpu::setFlag(F_H);
+            setFlag(F_H);
         }
 
         if((param1 & 0xFFFF + param2 & 0xFFFF) >= 0x10000) {
-            Cpu::setFlag(F_C);
+            setFlag(F_C);
         }
     }
 
     if(m_curInst.reg1 == R_SP) {
         i8 value = m_curInstData.param2;
         result = m_curInstData.param1 + value;
-        Cpu::clearFlag(F_Z);
+        clearFlag(F_Z);
         if((m_curInstData.param1 & 0xF + m_curInstData.param2 & 0xF) >= 0x10) {
-            Cpu::setFlag(F_H);
+            setFlag(F_H);
         }
 
         if((m_curInstData.param1 & 0xFF + m_curInstData.param2 & 0xFF) >= 0x100) {
-            Cpu::setFlag(F_C);
+            setFlag(F_C);
         }
     }
     putData(result);
@@ -425,21 +425,21 @@ void Cpu::add() {
 void Cpu::adc() {
     u8 carry = getFlag(F_C);
     u16 result = m_curInstData.param1 + m_curInstData.param2 + carry;
-    Cpu::clearFlag(F_N);
-    Cpu::clearFlag(F_H);
-    Cpu::clearFlag(F_C);
+    clearFlag(F_N);
+    clearFlag(F_H);
+    clearFlag(F_C);
 
 
     if(result == 0) {
-        Cpu::setFlag(F_Z);
+        setFlag(F_Z);
     }
 
     if((m_curInstData.param1 & 0xF + m_curInstData.param2 & 0xF) + carry >= 0x10) {
-        Cpu::setFlag(F_H);
+        setFlag(F_H);
     }
 
     if((m_curInstData.param1 & 0xFF + m_curInstData.param2 & 0xFF) + carry >= 0x100) {
-        Cpu::setFlag(F_C);
+        setFlag(F_C);
     }
     
     putData(result);
@@ -448,21 +448,21 @@ void Cpu::adc() {
 void Cpu::sub() {
     // u8 carry = getFlag(F_C);
     u16 result = m_curInstData.param1 - m_curInstData.param2;
-    Cpu::clearFlag(F_N);
-    Cpu::clearFlag(F_H);
-    Cpu::clearFlag(F_C);
+    clearFlag(F_N);
+    clearFlag(F_H);
+    clearFlag(F_C);
 
 
     if(result == 0) {
-        Cpu::setFlag(F_Z);
+        setFlag(F_Z);
     }
 
     if((m_curInstData.param1 & 0xF) < (m_curInstData.param2 & 0xF)) {
-        Cpu::setFlag(F_H);
+        setFlag(F_H);
     }
 
     if(m_curInstData.param1 < m_curInstData.param2) {
-        Cpu::setFlag(F_C);
+        setFlag(F_C);
     }
     
     putData(result);
@@ -471,21 +471,21 @@ void Cpu::sub() {
 void Cpu::sbc() {
     u8 carry = getFlag(F_C);
     u16 result = m_curInstData.param1 - (m_curInstData.param2 + carry);
-    Cpu::clearFlag(F_N);
-    Cpu::clearFlag(F_H);
-    Cpu::clearFlag(F_C);
+    clearFlag(F_N);
+    clearFlag(F_H);
+    clearFlag(F_C);
 
 
     if(result == 0) {
-        Cpu::setFlag(F_Z);
+        setFlag(F_Z);
     }
 
     if((m_curInstData.param1 & 0xF) < (m_curInstData.param2 & 0xF) + carry) {
-        Cpu::setFlag(F_H);
+        setFlag(F_H);
     }
 
     if(m_curInstData.param1 < m_curInstData.param2 + carry) {
-        Cpu::setFlag(F_C);
+        setFlag(F_C);
     }
     
     putData(result);
@@ -538,58 +538,58 @@ void Cpu::dec() {
 
 void Cpu::XOR() {
     u16 result = m_curInstData.param1 ^ m_curInstData.param2;
-    Cpu::clearFlag(F_N);
-    Cpu::clearFlag(F_C);
-    Cpu::clearFlag(F_H);
+    clearFlag(F_N);
+    clearFlag(F_C);
+    clearFlag(F_H);
     if(result == 0) {
-        Cpu::setFlag(F_Z);
+        setFlag(F_Z);
     } else {
-        Cpu::clearFlag(F_Z);
+        clearFlag(F_Z);
     }
     putData(result);
 }
 
 void Cpu::AND() {
     u16 result = m_curInstData.param1 & m_curInstData.param2;
-    Cpu::clearFlag(F_N);
-    Cpu::clearFlag(F_C);
-    Cpu::setFlag(F_H);
+    clearFlag(F_N);
+    clearFlag(F_C);
+    setFlag(F_H);
     if(result == 0) {
-        Cpu::setFlag(F_Z);
+        setFlag(F_Z);
     } else {
-        Cpu::clearFlag(F_Z);
+        clearFlag(F_Z);
     }
     putData(result);
 }
 
 void Cpu::OR() {
     u16 result = m_curInstData.param1 | m_curInstData.param2;
-    Cpu::clearFlag(F_N);
-    Cpu::clearFlag(F_C);
-    Cpu::clearFlag(F_H);
+    clearFlag(F_N);
+    clearFlag(F_C);
+    clearFlag(F_H);
     if(result == 0) {
-        Cpu::setFlag(F_Z);
+        setFlag(F_Z);
     } else {
-        Cpu::clearFlag(F_Z);
+        clearFlag(F_Z);
     }
     putData(result);
 }
 
 void Cpu::CP() {
-    Cpu::clearFlag(F_Z);
-    Cpu::setFlag(F_N);
-    Cpu::clearFlag(F_C);
-    Cpu::clearFlag(F_H);
+    clearFlag(F_Z);
+    setFlag(F_N);
+    clearFlag(F_C);
+    clearFlag(F_H);
     if(m_curInstData.param1 == m_curInstData.param2) {
-        Cpu::setFlag(F_Z);
+        setFlag(F_Z);
     }
 
     if(m_curInstData.param1 < m_curInstData.param2) {
-        Cpu::setFlag(F_C);
+        setFlag(F_C);
     }
 
     if((m_curInstData.param1 & 0b1111) < (m_curInstData.param2 & 0b1111)) {
-        Cpu::setFlag(F_H);
+        setFlag(F_H);
     }
 }
 
@@ -658,20 +658,20 @@ void Cpu::cb() {
                 value = m_emu->getBus()->read(value);
             }
 
-            Cpu::clearFlag(F_Z);
-            Cpu::clearFlag(F_N);
-            Cpu::clearFlag(F_C);
-            Cpu::clearFlag(F_H);
+            clearFlag(F_Z);
+            clearFlag(F_N);
+            clearFlag(F_C);
+            clearFlag(F_H);
 
             u8 overflow = 0;
             if(value & 0x80) {
-                Cpu::setFlag(F_C);
+                setFlag(F_C);
                 overflow = 1;
             }
 
             value = ((value << 1) & 0xFF) + overflow;
             if(value == 0) {
-                Cpu::setFlag(F_Z);
+                setFlag(F_Z);
             }
 
             if(reg == R_HL) {
@@ -688,20 +688,20 @@ void Cpu::cb() {
                 value = m_emu->getBus()->read(value);
             }
 
-            Cpu::clearFlag(F_Z);
-            Cpu::clearFlag(F_N);
-            Cpu::clearFlag(F_C);
-            Cpu::clearFlag(F_H);
+            clearFlag(F_Z);
+            clearFlag(F_N);
+            clearFlag(F_C);
+            clearFlag(F_H);
 
             u8 overflow = 0;
             if(value & 0b1) {
-                Cpu::setFlag(F_C);
+                setFlag(F_C);
                 overflow = 1;
             }
 
             value = ((value >> 1) & 0xFF) + (overflow << 7);
             if(value == 0) {
-                Cpu::setFlag(F_Z);
+                setFlag(F_Z);
             }
 
             if(reg == R_HL) {
@@ -720,18 +720,18 @@ void Cpu::cb() {
 
             u8 carry = getFlag(F_C);
 
-            Cpu::clearFlag(F_Z);
-            Cpu::clearFlag(F_N);
-            Cpu::clearFlag(F_C);
-            Cpu::clearFlag(F_H);
+            clearFlag(F_Z);
+            clearFlag(F_N);
+            clearFlag(F_C);
+            clearFlag(F_H);
 
             if(value & 0x80) {
-                Cpu::setFlag(F_C);
+                setFlag(F_C);
             }
 
             value = ((value << 1) & 0xFF) + carry;
             if(value == 0) {
-                Cpu::setFlag(F_Z);
+                setFlag(F_Z);
             }
 
             if(reg == R_HL) {
@@ -750,18 +750,18 @@ void Cpu::cb() {
 
             u8 carry = getFlag(F_C);
 
-            Cpu::clearFlag(F_Z);
-            Cpu::clearFlag(F_N);
-            Cpu::clearFlag(F_C);
-            Cpu::clearFlag(F_H);
+            clearFlag(F_Z);
+            clearFlag(F_N);
+            clearFlag(F_C);
+            clearFlag(F_H);
 
             if(value & 0b1) {
-                Cpu::setFlag(F_C);
+                setFlag(F_C);
             }
 
             value = ((value >> 1) & 0xFF) + (carry << 7);
             if(value == 0) {
-                Cpu::setFlag(F_Z);
+                setFlag(F_Z);
             }
 
             if(reg == R_HL) {
@@ -778,18 +778,18 @@ void Cpu::cb() {
                 value = m_emu->getBus()->read(value);
             }
 
-            Cpu::clearFlag(F_Z);
-            Cpu::clearFlag(F_N);
-            Cpu::clearFlag(F_C);
-            Cpu::clearFlag(F_H);
+            clearFlag(F_Z);
+            clearFlag(F_N);
+            clearFlag(F_C);
+            clearFlag(F_H);
 
             if(value & 0x80) {
-                Cpu::setFlag(F_C);
+                setFlag(F_C);
             }
 
             value = ((value << 1) & 0xFF);
             if(value == 0) {
-                Cpu::setFlag(F_Z);
+                setFlag(F_Z);
             }
 
             if(reg == R_HL) {
@@ -806,19 +806,19 @@ void Cpu::cb() {
                 value = m_emu->getBus()->read(value);
             }
 
-            Cpu::clearFlag(F_Z);
-            Cpu::clearFlag(F_N);
-            Cpu::clearFlag(F_C);
-            Cpu::clearFlag(F_H);
+            clearFlag(F_Z);
+            clearFlag(F_N);
+            clearFlag(F_C);
+            clearFlag(F_H);
 
             if(value & 0b1) {
-                Cpu::setFlag(F_C);
+                setFlag(F_C);
             }
 
             u8 lastBit = (value & 0x80);
             value = ((value >> 1) & 0xFF) | lastBit;
             if(value == 0) {
-                Cpu::setFlag(F_Z);
+                setFlag(F_Z);
             }
 
             if(reg == R_HL) {
@@ -835,14 +835,14 @@ void Cpu::cb() {
                 value = m_emu->getBus()->read(value);
             }
 
-            Cpu::clearFlag(F_Z);
-            Cpu::clearFlag(F_N);
-            Cpu::clearFlag(F_C);
-            Cpu::clearFlag(F_H);
+            clearFlag(F_Z);
+            clearFlag(F_N);
+            clearFlag(F_C);
+            clearFlag(F_H);
 
             value = ((value & 0xF) << 4) | ((value & 0xF0) >> 4);
             if(value == 0) {
-                Cpu::setFlag(F_Z);
+                setFlag(F_Z);
             }
 
             if(reg == R_HL) {
@@ -859,18 +859,18 @@ void Cpu::cb() {
                 value = m_emu->getBus()->read(value);
             }
 
-            Cpu::clearFlag(F_Z);
-            Cpu::clearFlag(F_N);
-            Cpu::clearFlag(F_C);
-            Cpu::clearFlag(F_H);
+            clearFlag(F_Z);
+            clearFlag(F_N);
+            clearFlag(F_C);
+            clearFlag(F_H);
 
             if(value & 0b1) {
-                Cpu::setFlag(F_C);
+                setFlag(F_C);
             }
 
             value = ((value >> 1) & 0xFF);
             if(value == 0) {
-                Cpu::setFlag(F_Z);
+                setFlag(F_Z);
             }
 
             if(reg == R_HL) {
@@ -888,12 +888,12 @@ void Cpu::cb() {
                 value = m_emu->getBus()->read(value);
             }
 
-            Cpu::setFlag(F_Z);
-            Cpu::clearFlag(F_N);
-            Cpu::setFlag(F_H);
+            setFlag(F_Z);
+            clearFlag(F_N);
+            setFlag(F_H);
 
             if(value & (1 << bitOp)) {
-                Cpu::clearFlag(F_Z);
+                clearFlag(F_Z);
             }
             break;
         }
@@ -949,16 +949,16 @@ void Cpu::ld() {
         cycle(1);
 
         u16 result = m_curInstData.param1 + (i8)value;
-        Cpu::clearFlag(F_Z);
-        Cpu::clearFlag(F_N);
-        Cpu::clearFlag(F_H);
-        Cpu::clearFlag(F_C);
+        clearFlag(F_Z);
+        clearFlag(F_N);
+        clearFlag(F_H);
+        clearFlag(F_C);
         if((m_curInstData.param1 & 0xF + m_curInstData.param2 & 0xF) >= 0x10) {
-            Cpu::setFlag(F_H);
+            setFlag(F_H);
         }
 
         if((m_curInstData.param1 & 0xFF + m_curInstData.param2 & 0xFF) >= 0x100) {
-            Cpu::setFlag(F_C);
+            setFlag(F_C);
         }
         putData(result);
     } else {
