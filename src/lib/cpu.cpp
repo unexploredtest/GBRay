@@ -211,6 +211,7 @@ static const std::array<Instruction, 0xFF> INSTRUCTIONS = [] {
     temp[0xC8] = Instruction{IN_RET, AM_R, R_PC, R_NONE, C_Z};
     temp[0xC9] = Instruction{IN_RET, AM_R, R_PC, R_NONE, C_NONE};
     temp[0xCA] = Instruction{IN_JP, AM_R_N16, R_PC, R_NONE, C_Z};
+    temp[0xCB] = Instruction{IN_CB, AM_R_N8};
     temp[0xCC] = Instruction{IN_CALL, AM_R_N16, R_PC, R_NONE, C_Z};
     temp[0xCD] = Instruction{IN_CALL, AM_R_N16, R_PC, R_NONE, C_NONE};
     temp[0xCE] = Instruction{IN_ADC, AM_R_N8, R_A};
@@ -364,6 +365,9 @@ void Cpu::runInstruction() {
             break;
         case IN_DI: 
             di();
+            break;
+        case IN_CB: 
+            cb();
             break;
         default:
             throw std::runtime_error("ERROR: Unsupported instruction!");
@@ -635,6 +639,300 @@ void Cpu::rst() {
 
 void Cpu::di() {
     m_intMasterEnabled = false;
+}
+
+void Cpu::cb() {
+    u8 inst = m_curInstData.param2;
+    RegType reg = getCBReg(inst & 0b111);
+    u8 operation = (inst & 0b11111000) >> 3;
+    u8 bitOp = operation & 0b111; // For OPs set, res and bit
+    if(operation >= 0x08) {
+        operation = 0x07 + ((operation & (0xFF - 0b111)) >> 3);
+    }
+    
+
+    switch (operation) {
+        case CB_RLC: {
+            u16 value = readReg(reg);
+            if(reg == R_HL) {
+                value = m_emu->getBus()->read(value);
+            }
+
+            Cpu::clearFlag(F_Z);
+            Cpu::clearFlag(F_N);
+            Cpu::clearFlag(F_C);
+            Cpu::clearFlag(F_H);
+
+            u8 overflow = 0;
+            if(value & 0x80) {
+                Cpu::setFlag(F_C);
+                overflow = 1;
+            }
+
+            value = ((value << 1) & 0xFF) + overflow;
+            if(value == 0) {
+                Cpu::setFlag(F_Z);
+            }
+
+            if(reg == R_HL) {
+                m_emu->getBus()->write(readReg(reg), value);
+            } else {
+                writeReg(reg, value);
+            }
+            break;
+        }
+
+        case CB_RRC: {
+            u16 value = readReg(reg);
+            if(reg == R_HL) {
+                value = m_emu->getBus()->read(value);
+            }
+
+            Cpu::clearFlag(F_Z);
+            Cpu::clearFlag(F_N);
+            Cpu::clearFlag(F_C);
+            Cpu::clearFlag(F_H);
+
+            u8 overflow = 0;
+            if(value & 0b1) {
+                Cpu::setFlag(F_C);
+                overflow = 1;
+            }
+
+            value = ((value >> 1) & 0xFF) + (overflow << 7);
+            if(value == 0) {
+                Cpu::setFlag(F_Z);
+            }
+
+            if(reg == R_HL) {
+                m_emu->getBus()->write(readReg(reg), value);
+            } else {
+                writeReg(reg, value);
+            }
+            break;
+        }
+           
+        case CB_RL: {
+            u16 value = readReg(reg);
+            if(reg == R_HL) {
+                value = m_emu->getBus()->read(value);
+            }
+
+            u8 carry = getFlag(F_C);
+
+            Cpu::clearFlag(F_Z);
+            Cpu::clearFlag(F_N);
+            Cpu::clearFlag(F_C);
+            Cpu::clearFlag(F_H);
+
+            if(value & 0x80) {
+                Cpu::setFlag(F_C);
+            }
+
+            value = ((value << 1) & 0xFF) + carry;
+            if(value == 0) {
+                Cpu::setFlag(F_Z);
+            }
+
+            if(reg == R_HL) {
+                m_emu->getBus()->write(readReg(reg), value);
+            } else {
+                writeReg(reg, value);
+            }
+            break;
+        }
+
+        case CB_RR: {
+            u16 value = readReg(reg);
+            if(reg == R_HL) {
+                value = m_emu->getBus()->read(value);
+            }
+
+            u8 carry = getFlag(F_C);
+
+            Cpu::clearFlag(F_Z);
+            Cpu::clearFlag(F_N);
+            Cpu::clearFlag(F_C);
+            Cpu::clearFlag(F_H);
+
+            if(value & 0b1) {
+                Cpu::setFlag(F_C);
+            }
+
+            value = ((value >> 1) & 0xFF) + (carry << 7);
+            if(value == 0) {
+                Cpu::setFlag(F_Z);
+            }
+
+            if(reg == R_HL) {
+                m_emu->getBus()->write(readReg(reg), value);
+            } else {
+                writeReg(reg, value);
+            }
+            break;
+        }
+        
+        case CB_SLA: {
+            u16 value = readReg(reg);
+            if(reg == R_HL) {
+                value = m_emu->getBus()->read(value);
+            }
+
+            Cpu::clearFlag(F_Z);
+            Cpu::clearFlag(F_N);
+            Cpu::clearFlag(F_C);
+            Cpu::clearFlag(F_H);
+
+            if(value & 0x80) {
+                Cpu::setFlag(F_C);
+            }
+
+            value = ((value << 1) & 0xFF);
+            if(value == 0) {
+                Cpu::setFlag(F_Z);
+            }
+
+            if(reg == R_HL) {
+                m_emu->getBus()->write(readReg(reg), value);
+            } else {
+                writeReg(reg, value);
+            }
+            break;
+        }
+
+        case CB_SRA: {
+            u16 value = readReg(reg);
+            if(reg == R_HL) {
+                value = m_emu->getBus()->read(value);
+            }
+
+            Cpu::clearFlag(F_Z);
+            Cpu::clearFlag(F_N);
+            Cpu::clearFlag(F_C);
+            Cpu::clearFlag(F_H);
+
+            if(value & 0b1) {
+                Cpu::setFlag(F_C);
+            }
+
+            u8 lastBit = (value & 0x80);
+            value = ((value >> 1) & 0xFF) | lastBit;
+            if(value == 0) {
+                Cpu::setFlag(F_Z);
+            }
+
+            if(reg == R_HL) {
+                m_emu->getBus()->write(readReg(reg), value);
+            } else {
+                writeReg(reg, value);
+            }
+            break;
+        }
+
+        case CB_SWAP: {
+            u16 value = readReg(reg);
+            if(reg == R_HL) {
+                value = m_emu->getBus()->read(value);
+            }
+
+            Cpu::clearFlag(F_Z);
+            Cpu::clearFlag(F_N);
+            Cpu::clearFlag(F_C);
+            Cpu::clearFlag(F_H);
+
+            value = ((value & 0xF) << 4) | ((value & 0xF0) >> 4);
+            if(value == 0) {
+                Cpu::setFlag(F_Z);
+            }
+
+            if(reg == R_HL) {
+                m_emu->getBus()->write(readReg(reg), value);
+            } else {
+                writeReg(reg, value);
+            }
+            break;
+        }
+
+        case CB_SRL: {
+            u16 value = readReg(reg);
+            if(reg == R_HL) {
+                value = m_emu->getBus()->read(value);
+            }
+
+            Cpu::clearFlag(F_Z);
+            Cpu::clearFlag(F_N);
+            Cpu::clearFlag(F_C);
+            Cpu::clearFlag(F_H);
+
+            if(value & 0b1) {
+                Cpu::setFlag(F_C);
+            }
+
+            value = ((value >> 1) & 0xFF);
+            if(value == 0) {
+                Cpu::setFlag(F_Z);
+            }
+
+            if(reg == R_HL) {
+                m_emu->getBus()->write(readReg(reg), value);
+            } else {
+                writeReg(reg, value);
+            }
+            break;
+        }
+
+        case CB_BIT: {
+            std::cout << "LOL\n";
+            u16 value = readReg(reg);
+            if(reg == R_HL) {
+                value = m_emu->getBus()->read(value);
+            }
+
+            Cpu::setFlag(F_Z);
+            Cpu::clearFlag(F_N);
+            Cpu::setFlag(F_H);
+
+            if(value & (1 << bitOp)) {
+                Cpu::clearFlag(F_Z);
+            }
+            break;
+        }
+
+        case CB_RES: {
+            u16 value = readReg(reg);
+            if(reg == R_HL) {
+                value = m_emu->getBus()->read(value);
+            }
+
+            value = value & (0xFF - (1 << bitOp));
+
+            if(reg == R_HL) {
+                m_emu->getBus()->write(readReg(reg), value);
+            } else {
+                writeReg(reg, value);
+            }
+            break;
+        }
+
+        case CB_SET: {
+            u16 value = readReg(reg);
+            if(reg == R_HL) {
+                value = m_emu->getBus()->read(value);
+            }
+
+            value = value | (1 << bitOp);
+
+            if(reg == R_HL) {
+                m_emu->getBus()->write(readReg(reg), value);
+            } else {
+                writeReg(reg, value);
+            }
+            break;
+        }
+
+        default:
+            throw std::runtime_error("ERROR: No such CB operation!");
+    }
 }
 
 void Cpu::ld() {
@@ -1126,4 +1424,28 @@ void Cpu::jumpToAddress(u16 address, bool shouldJump, bool pushPC) {
         cycle(1);
     }
     
+}
+
+RegType Cpu::getCBReg(u8 CBCode) {
+    switch (CBCode) {
+        case 0:
+            return R_B;
+        case 1:
+            return R_C;
+        case 2:
+            return R_D;
+        case 3:
+            return R_E;
+        case 4:
+            return R_H;
+        case 5:
+            return R_L;
+        case 6:
+            return R_HL;
+        case 7:
+            return R_A;
+        default:
+            throw std::runtime_error("ERROR: No such CB register!");
+            break;
+    }
 }

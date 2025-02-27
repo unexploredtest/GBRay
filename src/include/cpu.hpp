@@ -123,6 +123,20 @@ enum CondType {
     C_NONE, C_NZ, C_Z, C_NC, C_C
 };
 
+enum CBType {
+    CB_RLC,
+    CB_RRC,
+    CB_RL,
+    CB_RR,
+    CB_SLA,
+    CB_SRA,
+    CB_SWAP,
+    CB_SRL,
+    CB_BIT,
+    CB_RES,
+    CB_SET,
+};
+
 struct Instruction {
     InsType insType;
     AddrMode addrMode;
@@ -169,6 +183,8 @@ class Cpu {
         bool m_intMasterEnabled = false;
         u8 m_IERegister;
 
+        static RegType getCBReg(u8 CBCode);
+
         // instructions
         Instruction m_curInst;
         InstructionData m_curInstData;
@@ -193,4 +209,5 @@ class Cpu {
         void push();
         void pop();
         void di();
+        void cb();
 };
