@@ -214,4 +214,8 @@ class Cpu {
         void rla();
         void rrca();
         void rra();
+        void daa();
+        void scf();
+        void cpl();
+        void ccf();
 };

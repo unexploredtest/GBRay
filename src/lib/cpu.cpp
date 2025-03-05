@@ -43,6 +43,7 @@ static const std::array<Instruction, 0xFF> INSTRUCTIONS = [] {
     temp[0x24] = Instruction{IN_INC, AM_R, R_H};
     temp[0x25] = Instruction{IN_DEC, AM_R, R_H};
     temp[0x26] = Instruction{IN_LD, AM_R_N8, R_H};
+    temp[0x27] = Instruction{IN_DAA};
     temp[0x28] = Instruction{IN_JR, AM_R_N8, R_PC, R_NONE, C_Z};
     temp[0x29] = Instruction{IN_ADD, AM_R_R, R_HL, R_HL};
     temp[0x2A] = Instruction{IN_LD, AM_R_HLI, R_A, R_HL};
@@ -50,6 +51,7 @@ static const std::array<Instruction, 0xFF> INSTRUCTIONS = [] {
     temp[0x2C] = Instruction{IN_INC, AM_R, R_L};
     temp[0x2D] = Instruction{IN_DEC, AM_R, R_L};
     temp[0x2E] = Instruction{IN_LD, AM_R_N8, R_L};
+    temp[0x2F] = Instruction{IN_CPL};
     // 0x30
     temp[0x30] = Instruction{IN_JR, AM_R_N8, R_PC, R_NONE, C_NC};
     temp[0x31] = Instruction{IN_LD, AM_R_N16, R_SP};
@@ -58,6 +60,7 @@ static const std::array<Instruction, 0xFF> INSTRUCTIONS = [] {
     temp[0x34] = Instruction{IN_INC, AM_MR, R_HL};
     temp[0x35] = Instruction{IN_DEC, AM_MR, R_HL};
     temp[0x36] = Instruction{IN_LD, AM_MR_N8, R_HL};
+    temp[0x37] = Instruction{IN_SCF};
     temp[0x38] = Instruction{IN_JR, AM_R_N8, R_PC, R_NONE, C_C};
     temp[0x39] = Instruction{IN_ADD, AM_R_R, R_HL, R_SP};
     temp[0x3A] = Instruction{IN_LD, AM_R_HLD, R_A, R_HL};
@@ -65,6 +68,7 @@ static const std::array<Instruction, 0xFF> INSTRUCTIONS = [] {
     temp[0x3C] = Instruction{IN_INC, AM_R, R_A};
     temp[0x3D] = Instruction{IN_DEC, AM_R, R_A};
     temp[0x3E] = Instruction{IN_LD, AM_R_N8, R_A};
+    temp[0x3F] = Instruction{IN_CCF};
     // 0x40
     temp[0x40] = Instruction{IN_LD, AM_R_R, R_B, R_B};
     temp[0x41] = Instruction{IN_LD, AM_R_R, R_B, R_C};
@@ -384,6 +388,18 @@ void Cpu::runInstruction() {
             break;
         case IN_RRA:
             rra();
+            break;
+        case IN_DAA:
+            daa();
+            break;
+        case IN_SCF:
+            scf();
+            break;
+        case IN_CPL:
+            cpl();
+            break;
+        case IN_CCF:
+            ccf();
             break;
         default:
             throw std::runtime_error("ERROR: Unsupported instruction!");
@@ -1021,6 +1037,71 @@ void Cpu::rra() {
     value = ((value >> 1) & 0xFF) + (carry << 7);
     writeReg(R_A, value);
 }
+
+void Cpu::daa() {
+    u8 value = readReg(R_A);
+    u8 adjustment = 0x0;
+    clearFlag(F_Z);
+    if(getFlag(F_N)) {
+        clearFlag(F_C);
+        if(getFlag(F_H)) {
+            adjustment += 0x6;
+        }
+
+        if(getFlag(F_C)) {
+            adjustment += 0x60;
+        }
+        value -= adjustment;
+    } else {
+        if(getFlag(F_H) || ((value & 0xF) > 0x9)) {
+            adjustment += 0x6;
+        }
+
+        if(getFlag(F_C) || (value > 0x99)) {
+            adjustment += 0x60;
+            setFlag(F_C);
+        } else {
+            clearFlag(F_C);
+        }
+        value -= adjustment;
+    }
+
+    clearFlag(F_H);
+    if(value == 0) {
+        setFlag(F_Z);
+    }
+
+    writeReg(R_A, value);
+}
+
+void Cpu::scf() {
+
+}
+
+void Cpu::cpl() {
+    u8 value = readReg(R_A);
+
+    setFlag(F_N);
+    setFlag(F_H);
+    writeReg(R_A, ~value);  
+}
+
+void Cpu::ccf() {
+    if(getFlag(F_C)) {
+        clearFlag(F_C);
+    } else {
+        setFlag(F_C);
+    }
+    clearFlag(F_N);
+    clearFlag(F_H);
+}
+
+void Cpu::ccf() {
+    setFlag(F_C);
+    clearFlag(F_N);
+    clearFlag(F_H);
+}
+
 
 void Cpu::ld() {
     if(m_curInst.addrMode == AM_MR_R && m_curInst.reg1 == R_C) {
