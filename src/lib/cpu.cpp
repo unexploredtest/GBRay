@@ -10,6 +10,7 @@ static const std::array<Instruction, 0xFF> INSTRUCTIONS = [] {
     temp[0x04] = Instruction{IN_INC, AM_R, R_B};
     temp[0x05] = Instruction{IN_DEC, AM_R, R_B};
     temp[0x06] = Instruction{IN_LD, AM_R_N8, R_B};
+    temp[0x07] = Instruction{IN_RLCA};
     temp[0x08] = Instruction{IN_LD, AM_MN16_R, R_SP};
     temp[0x09] = Instruction{IN_ADD, AM_R_R, R_HL, R_BC};
     temp[0x0A] = Instruction{IN_LD, AM_R_MR, R_A, R_BC};
@@ -17,6 +18,7 @@ static const std::array<Instruction, 0xFF> INSTRUCTIONS = [] {
     temp[0x0C] = Instruction{IN_INC, AM_R, R_C};
     temp[0x0D] = Instruction{IN_DEC, AM_R, R_C};
     temp[0x0E] = Instruction{IN_LD, AM_R_N8, R_C};
+    temp[0x0F] = Instruction{IN_RRCA};
     // 0x10
     temp[0x11] = Instruction{IN_LD, AM_R_N16, R_DE};
     temp[0x12] = Instruction{IN_LD, AM_MR_R, R_DE, R_A};
@@ -24,6 +26,7 @@ static const std::array<Instruction, 0xFF> INSTRUCTIONS = [] {
     temp[0x14] = Instruction{IN_INC, AM_R, R_D};
     temp[0x15] = Instruction{IN_DEC, AM_R, R_D};
     temp[0x16] = Instruction{IN_LD, AM_R_N8, R_D};
+    temp[0x17] = Instruction{IN_RLA};
     temp[0x18] = Instruction{IN_JR, AM_R_N8, R_PC, R_NONE, C_NONE};
     temp[0x19] = Instruction{IN_ADD, AM_R_R, R_HL, R_DE};
     temp[0x1A] = Instruction{IN_LD, AM_R_MR, R_A, R_DE};
@@ -31,6 +34,7 @@ static const std::array<Instruction, 0xFF> INSTRUCTIONS = [] {
     temp[0x1C] = Instruction{IN_INC, AM_R, R_E};
     temp[0x1D] = Instruction{IN_DEC, AM_R, R_E};
     temp[0x1E] = Instruction{IN_LD, AM_R_N8, R_E};
+    temp[0x1F] = Instruction{IN_RRA};
     // 0x20
     temp[0x20] = Instruction{IN_JR, AM_R_N8, R_PC, R_NONE, C_NZ};
     temp[0x21] = Instruction{IN_LD, AM_R_N16, R_HL};
@@ -368,6 +372,18 @@ void Cpu::runInstruction() {
             break;
         case IN_CB: 
             cb();
+            break;
+        case IN_RLCA:
+            rlca();
+            break;
+        case IN_RLA:
+            rla();
+            break;
+        case IN_RRCA:
+            rrca();
+            break;
+        case IN_RRA:
+            rra();
             break;
         default:
             throw std::runtime_error("ERROR: Unsupported instruction!");
@@ -933,6 +949,77 @@ void Cpu::cb() {
         default:
             throw std::runtime_error("ERROR: No such CB operation!");
     }
+}
+
+void Cpu::rlca() {
+    u16 value = readReg(R_A);
+    clearFlag(F_Z);
+    clearFlag(F_N);
+    clearFlag(F_C);
+    clearFlag(F_H);
+
+    u8 overflow = 0;
+    if(value & 0x80) {
+        setFlag(F_C);
+        overflow = 1;
+    }
+
+    value = ((value << 1) & 0xFF) + overflow;
+    writeReg(R_A, value);
+
+}
+
+void Cpu::rla() {
+    u16 value = readReg(R_A);
+    u8 carry = getFlag(F_C);
+
+    clearFlag(F_Z);
+    clearFlag(F_N);
+    clearFlag(F_C);
+    clearFlag(F_H);
+
+    if(value & 0x80) {
+        setFlag(F_C);
+    }
+
+    value = ((value << 1) & 0xFF) + carry;
+    writeReg(R_A, value);
+}
+
+
+void Cpu::rrca() {
+    u16 value = readReg(R_A);
+
+    clearFlag(F_Z);
+    clearFlag(F_N);
+    clearFlag(F_C);
+    clearFlag(F_H);
+
+    u8 overflow = 0;
+    if(value & 0b1) {
+        setFlag(F_C);
+        overflow = 1;
+    }
+
+    value = ((value >> 1) & 0xFF) + (overflow << 7);
+    writeReg(R_A, value);
+}
+
+void Cpu::rra() {
+    u16 value = readReg(R_A);
+    u8 carry = getFlag(F_C);
+
+    clearFlag(F_Z);
+    clearFlag(F_N);
+    clearFlag(F_C);
+    clearFlag(F_H);
+
+    if(value & 0b1) {
+        setFlag(F_C);
+    }
+
+    value = ((value >> 1) & 0xFF) + (carry << 7);
+    writeReg(R_A, value);
 }
 
 void Cpu::ld() {

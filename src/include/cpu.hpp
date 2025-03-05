@@ -210,4 +210,8 @@ class Cpu {
         void pop();
         void di();
         void cb();
+        void rlca();
+        void rla();
+        void rrca();
+        void rra();
 };
