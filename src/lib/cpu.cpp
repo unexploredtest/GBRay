@@ -1074,10 +1074,6 @@ void Cpu::daa() {
     writeReg(R_A, value);
 }
 
-void Cpu::scf() {
-
-}
-
 void Cpu::cpl() {
     u8 value = readReg(R_A);
 
@@ -1096,7 +1092,7 @@ void Cpu::ccf() {
     clearFlag(F_H);
 }
 
-void Cpu::ccf() {
+void Cpu::scf() {
     setFlag(F_C);
     clearFlag(F_N);
     clearFlag(F_H);
