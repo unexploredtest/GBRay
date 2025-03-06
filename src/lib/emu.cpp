@@ -10,11 +10,28 @@ Emu::Emu() {
 void Emu::run(std::string filePath) {
     m_cart->loadROM(filePath);
     m_cart->printROMInfo();
+    std::thread cpuThread = std::thread(&Emu::runCpu, this);
+    
+    while(!m_die) {
+        continue;
+    }
+}
+
+void Emu::runCpu() {
     m_cpu->init();
 
-    bool running = true;
-    while(running) {
+    m_running = true;
+    m_paused = false;
+    m_ticks = 0;
+    while(m_running) {
+
+        if(m_paused) {
+            continue;
+        }
+
         m_cpu->step();
+
+        m_ticks++;
     }
 }
 
