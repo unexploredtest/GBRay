@@ -127,7 +127,7 @@ static const std::array<Instruction, 0xFF> INSTRUCTIONS = [] {
     temp[0x73] = Instruction{IN_LD, AM_MR_R, R_HL, R_E};
     temp[0x74] = Instruction{IN_LD, AM_MR_R, R_HL, R_H};
     temp[0x75] = Instruction{IN_LD, AM_MR_R, R_HL, R_L};
-    // temp[0x76] = Instruction{IN_LD, AM_R_MR, R_H, R_HL};
+    temp[0x76] = Instruction{IN_HALT};
     temp[0x77] = Instruction{IN_LD, AM_MR_R, R_HL, R_A};
     temp[0x78] = Instruction{IN_LD, AM_R_R, R_A, R_B};
     temp[0x79] = Instruction{IN_LD, AM_R_R, R_A, R_C};
@@ -263,6 +263,7 @@ static const std::array<Instruction, 0xFF> INSTRUCTIONS = [] {
     temp[0xF8] = Instruction{IN_LD, AM_R_R, R_HL, R_SP};
     temp[0xF9] = Instruction{IN_LD, AM_R_R, R_SP, R_HL};
     temp[0xFA] = Instruction{IN_LD, AM_R_MN16, R_A};
+    temp[0xFB] = Instruction{IN_EI};
     temp[0xFE] = Instruction{IN_CP, AM_R_N8, R_A};
     temp[0xFF] = Instruction{IN_RST, AM_R, R_PC, R_NONE, C_NONE, 0x38};
 
@@ -280,17 +281,32 @@ void Cpu::init() {
 }
 
 void Cpu::step() {
+    if(!m_halted) {
+        printCPUInfo();
+        u8 opcode = m_emu->getBus()->read(m_regs.PC);
+        m_regs.PC++;
+        cycle(1);
+        try {
+            fetchInstuction(opcode);
+            fetchData();
+            runInstruction();
+        } catch (std::string error) {
+            
+        }
+    } else {
+        cycle(1);
 
-    printCPUInfo();
-    u8 opcode = m_emu->getBus()->read(m_regs.PC);
-    m_regs.PC++;
-    cycle(1);
-    try {
-        fetchInstuction(opcode);
-        fetchData();
-        runInstruction();
-    } catch (std::string error) {
-        
+        if(m_intFlags) {
+            m_halted = false;
+        }
+    }
+
+    if(m_intMasterEnabled) {
+        m_enablingIME = false;
+    }
+
+    if(m_enablingIME) {
+        m_intMasterEnabled = true;
     }
     // std::cin.get();
 }
@@ -671,6 +687,10 @@ void Cpu::rst() {
 
 void Cpu::di() {
     m_intMasterEnabled = false;
+}
+
+void Cpu::ei() {
+    m_enablingIME = true;
 }
 
 void Cpu::cb() {
@@ -1098,6 +1118,9 @@ void Cpu::scf() {
     clearFlag(F_H);
 }
 
+void Cpu::halt() {
+    m_halted = true;
+}
 
 void Cpu::ld() {
     if(m_curInst.addrMode == AM_MR_R && m_curInst.reg1 == R_C) {
@@ -1572,10 +1595,13 @@ u8 Cpu::popStack() {
     return data;
 }
 
-void Cpu::jumpToAddress(u16 address, bool shouldJump, bool pushPC) {
+void Cpu::jumpToAddress(u16 address, bool shouldJump, bool pushPC, bool countCycle) {
     if(shouldJump) {
         if(pushPC) {
-            cycle(2);
+            if(countCycle) {
+                cycle(2);
+            }
+            
             u8 high = (m_regs.PC >> 8) & 0xFF;
             pushStack(high);
                   
@@ -1585,7 +1611,9 @@ void Cpu::jumpToAddress(u16 address, bool shouldJump, bool pushPC) {
         }
 
         writeReg(R_PC, address);
-        cycle(1);
+        if(countCycle) {
+            cycle(1);
+        }
     }
     
 }
@@ -1612,4 +1640,39 @@ RegType Cpu::getCBReg(u8 CBCode) {
             throw std::runtime_error("ERROR: No such CB register!");
             break;
     }
+}
+
+void Cpu::requestInterrupt(InterruptType inter) {
+    m_intFlags = m_intFlags | inter;
+}
+
+bool Cpu::checkInt(u16 address, InterruptType inter) {
+    if((m_intFlags & inter) && (m_IERegister & inter)) {
+        handleInt(address);
+        m_intFlags = m_intFlags & (~inter);
+        m_halted = false;
+        m_intMasterEnabled = false;
+
+        return true;
+    }
+    return false;
+}
+
+void Cpu::handleInt(u16 address) {
+    jumpToAddress(address, true, true, false);
+}
+
+
+void Cpu::handleInterrupts() {
+    if (checkInt(0x40, IT_VBLANK)) {
+
+    } else if (checkInt(0x48, IT_LCD_STAT)) {
+
+    } else if (checkInt(0x50, IT_TIMER)) {
+
+    }  else if (checkInt(0x58, IT_SERIAL)) {
+
+    }  else if (checkInt(0x60, IT_JOYPAD)) {
+
+    } 
 }

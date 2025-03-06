@@ -151,6 +151,14 @@ struct InstructionData {
     u16 param2;
 };
 
+enum InterruptType {
+    IT_VBLANK = 1,
+    IT_LCD_STAT = 2,
+    IT_TIMER = 4,
+    IT_SERIAL = 8,
+    IT_JOYPAD = 16
+};
+
 class Cpu {
     public:
         Cpu();
@@ -174,14 +182,25 @@ class Cpu {
         void writeIERegister(u8 data);
         void pushStack(u8 data);
         u8 popStack();
-        void jumpToAddress(u16 address, bool shouldJump, bool pushPC);
+        void jumpToAddress(u16 address, bool shouldJump, bool pushPC, bool countCycle = true);
+        void requestInterrupt(InterruptType inter);
+        void handleInterrupts();
+        
 
     private:
         Emu* m_emu;
         Regs m_regs;
 
+        bool m_halted = false;
+        bool m_stepping = false;
+
         bool m_intMasterEnabled = false;
+        bool m_enablingIME = false;
         u8 m_IERegister;
+        u8 m_intFlags;
+
+        bool checkInt(u16 address, InterruptType intType);
+        void handleInt(u16 address);
 
         static RegType getCBReg(u8 CBCode);
 
@@ -209,6 +228,7 @@ class Cpu {
         void push();
         void pop();
         void di();
+        void ei();
         void cb();
         void rlca();
         void rla();
@@ -218,4 +238,5 @@ class Cpu {
         void scf();
         void cpl();
         void ccf();
+        void halt();
 };
