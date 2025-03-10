@@ -20,3 +20,5 @@ class Emu;
 class Bus;
 class Cpu;
 class Ram;
+class IO;
+class Timer;

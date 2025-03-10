@@ -278,6 +278,20 @@ Cpu::Cpu(Emu* emu) {
 void Cpu::init() {
     m_regs = {0};
     m_regs.PC = 0x100;
+    m_regs.SP = 0xFFFE;
+    m_regs.A = 0x01;
+    m_regs.F = 0xB0;
+    m_regs.B = 0x00;
+    m_regs.C = 0x13;
+    m_regs.D = 0x00;
+    m_regs.E = 0xD8;
+    m_regs.H = 0x01;
+    m_regs.L = 0x4D;
+
+    m_IERegister = 0;
+    m_intFlags = 0;
+    m_intMasterEnabled = false;
+    m_enablingIME = false;
 }
 
 void Cpu::step() {
@@ -302,17 +316,23 @@ void Cpu::step() {
     }
 
     if(m_intMasterEnabled) {
+        handleInterrupts();
         m_enablingIME = false;
     }
 
     if(m_enablingIME) {
         m_intMasterEnabled = true;
     }
-    // std::cin.get();
+
+    dbgUpate();
+    dbgPrint();
 }
 
 void Cpu::cycle(int ticks) {
-
+    for(int i = 0; i < 4*ticks; i++) {
+        m_ticks++;
+        m_emu->getTimer()->tick();
+    }
 }
 
 void Cpu::fetchInstuction(u8 opcode) {
@@ -390,6 +410,12 @@ void Cpu::runInstruction() {
         case IN_DI: 
             di();
             break;
+        case IN_EI: 
+            ei();
+            break;
+        case IN_HALT: 
+            halt();
+            break;
         case IN_CB: 
             cb();
             break;
@@ -424,33 +450,33 @@ void Cpu::runInstruction() {
 
 void Cpu::add() {
     u16 result = m_curInstData.param1 + m_curInstData.param2;
+    
     clearFlag(F_N);
     clearFlag(F_H);
     clearFlag(F_C);
 
     if(m_curInst.reg1 != R_HL) {
-        
+        result = result & 0xFF;
+        clearFlag(F_Z);
         if(result == 0) {
             setFlag(F_Z);
-        } else {
-            clearFlag(F_Z);
         }
 
-        if((m_curInstData.param1 & 0xF + m_curInstData.param2 & 0xF) >= 0x10) {
+        if(((m_curInstData.param1 & 0xF) + (m_curInstData.param2 & 0xF)) >= 0x10) {
             setFlag(F_H);
         }
 
-        if((m_curInstData.param1 & 0xFF + m_curInstData.param2 & 0xFF) >= 0x100) {
+        if(((m_curInstData.param1 & 0xFF) + (m_curInstData.param2 & 0xFF)) >= 0x100) {
             setFlag(F_C);
         }
     } else {
         u32 param1 = m_curInstData.param1;
         u32 param2 = m_curInstData.param2;
-        if((param1 & 0xFFF + param2 & 0xFFF) >= 0x1000) {
+        if(((param1 & 0xFFF) + (param2 & 0xFFF)) >= 0x1000) {
             setFlag(F_H);
         }
 
-        if((param1 & 0xFFFF + param2 & 0xFFFF) >= 0x10000) {
+        if(((param1 & 0xFFFF) + (param2 & 0xFFFF)) >= 0x10000) {
             setFlag(F_C);
         }
     }
@@ -458,7 +484,6 @@ void Cpu::add() {
     if(m_curInst.reg1 == R_SP) {
         i8 value = m_curInstData.param2;
         result = m_curInstData.param1 + value;
-        clearFlag(F_Z);
         if((m_curInstData.param1 & 0xF + m_curInstData.param2 & 0xF) >= 0x10) {
             setFlag(F_H);
         }
@@ -466,6 +491,8 @@ void Cpu::add() {
         if((m_curInstData.param1 & 0xFF + m_curInstData.param2 & 0xFF) >= 0x100) {
             setFlag(F_C);
         }
+
+        clearFlag(F_Z);
     }
     putData(result);
 }
@@ -473,20 +500,22 @@ void Cpu::add() {
 void Cpu::adc() {
     u8 carry = getFlag(F_C);
     u16 result = m_curInstData.param1 + m_curInstData.param2 + carry;
+    result = result & 0xFF;
     clearFlag(F_N);
     clearFlag(F_H);
     clearFlag(F_C);
+    clearFlag(F_Z);
 
 
     if(result == 0) {
         setFlag(F_Z);
     }
 
-    if((m_curInstData.param1 & 0xF + m_curInstData.param2 & 0xF) + carry >= 0x10) {
+    if(((m_curInstData.param1 & 0xF) + (m_curInstData.param2 & 0xF)) + carry >= 0x10) {
         setFlag(F_H);
     }
 
-    if((m_curInstData.param1 & 0xFF + m_curInstData.param2 & 0xFF) + carry >= 0x100) {
+    if(((m_curInstData.param1 & 0xFF) + (m_curInstData.param2 & 0xFF)) + carry >= 0x100) {
         setFlag(F_C);
     }
     
@@ -496,9 +525,11 @@ void Cpu::adc() {
 void Cpu::sub() {
     // u8 carry = getFlag(F_C);
     u16 result = m_curInstData.param1 - m_curInstData.param2;
-    clearFlag(F_N);
+    result = result & 0xFF;
+    setFlag(F_N);
     clearFlag(F_H);
     clearFlag(F_C);
+    clearFlag(F_Z);
 
 
     if(result == 0) {
@@ -519,9 +550,11 @@ void Cpu::sub() {
 void Cpu::sbc() {
     u8 carry = getFlag(F_C);
     u16 result = m_curInstData.param1 - (m_curInstData.param2 + carry);
-    clearFlag(F_N);
+    result = result & 0xFF;
+    setFlag(F_N);
     clearFlag(F_H);
     clearFlag(F_C);
+    clearFlag(F_Z);
 
 
     if(result == 0) {
@@ -544,6 +577,7 @@ void Cpu::inc() {
     
     if(m_curInst.addrMode == AM_MR || (m_curInst.addrMode == AM_R &&
         !(m_curInst.reg1 == R_BC || m_curInst.reg1 == R_DE || m_curInst.reg1 == R_HL || m_curInst.reg1 == R_SP))) {
+        result = result & 0xFF;
         clearFlag(F_N);
         if(result == 0) {
             setFlag(F_Z);
@@ -566,7 +600,8 @@ void Cpu::dec() {
     
     if(m_curInst.addrMode == AM_MR || (m_curInst.addrMode == AM_R &&
         !(m_curInst.reg1 == R_BC || m_curInst.reg1 == R_DE || m_curInst.reg1 == R_HL || m_curInst.reg1 == R_SP))) {
-        clearFlag(F_N);
+        result = result & 0xFF;
+        setFlag(F_N);
         if(result == 0) {
             setFlag(F_Z);
         } else {
@@ -934,7 +969,6 @@ void Cpu::cb() {
         }
 
         case CB_BIT: {
-            std::cout << "LOL\n";
             u16 value = readReg(reg);
             if(reg == R_HL) {
                 value = m_emu->getBus()->read(value);
@@ -1063,7 +1097,6 @@ void Cpu::daa() {
     u8 adjustment = 0x0;
     clearFlag(F_Z);
     if(getFlag(F_N)) {
-        clearFlag(F_C);
         if(getFlag(F_H)) {
             adjustment += 0x6;
         }
@@ -1072,6 +1105,7 @@ void Cpu::daa() {
             adjustment += 0x60;
         }
         value -= adjustment;
+        clearFlag(F_C);
     } else {
         if(getFlag(F_H) || ((value & 0xF) > 0x9)) {
             adjustment += 0x6;
@@ -1083,7 +1117,7 @@ void Cpu::daa() {
         } else {
             clearFlag(F_C);
         }
-        value -= adjustment;
+        value += adjustment;
     }
 
     clearFlag(F_H);
@@ -1135,7 +1169,7 @@ void Cpu::ld() {
         m_regs.PC++;
         cycle(1);
 
-        u16 result = m_curInstData.param1 + (i8)value;
+        u16 result = m_curInstData.param2 + (i8)value;
         clearFlag(F_Z);
         clearFlag(F_N);
         clearFlag(F_H);
@@ -1332,11 +1366,11 @@ void Cpu::putData(u16 data) {
             break;
         case AM_MR_R:
             // writeReg(m_curInst.reg1, data);
-            m_emu->getBus()->write(m_curInst.reg1, data);
+            m_emu->getBus()->write(readReg(m_curInst.reg1), data);
             break;
         case AM_HLI_R:
             // writeReg(m_curInst.reg1, data);
-            m_emu->getBus()->write(m_curInst.reg1, data);
+            m_emu->getBus()->write(readReg(m_curInst.reg1), data);
             writeReg(R_HL, readReg(R_HL) + 1);
             break;
         case AM_R_HLI:
@@ -1345,7 +1379,7 @@ void Cpu::putData(u16 data) {
             break;
         case AM_HLD_R:
             // writeReg(m_curInst.reg1, data);
-            m_emu->getBus()->write(m_curInst.reg1, data);
+            m_emu->getBus()->write(readReg(m_curInst.reg1), data);
             writeReg(R_HL, readReg(R_HL) - 1);
             break;
         case AM_R_HLD:
@@ -1353,7 +1387,7 @@ void Cpu::putData(u16 data) {
             writeReg(R_HL, readReg(R_HL) - 1);
             break;
         case AM_MR_N8:
-            m_emu->getBus()->write(m_curInst.reg1, data);
+            m_emu->getBus()->write(readReg(m_curInst.reg1), data);
             break;
         case AM_MN8_R:
         case AM_MN16_R:
@@ -1365,6 +1399,7 @@ void Cpu::putData(u16 data) {
 }
 
 void Cpu::printCPUInfo() {
+    std::cout << "Tick " << std::hex << (int)m_ticks << ":" << std::endl;
     std::cout << "PC: 0x" << std::hex << (int)m_regs.PC;
     std::cout << " (" << std::hex << (int)m_emu->getBus()->read(m_regs.PC );
     std::cout << " " << std::hex << (int)m_emu->getBus()->read(m_regs.PC + 1);
@@ -1501,13 +1536,13 @@ u8 Cpu::getFlag(FlagType flagType) {
         case F_NONE:
             return 0;
         case F_Z:
-            return 1 ? m_regs.F & 0x80 : 0;
+            return m_regs.F & 0x80 ? 1 : 0;
         case F_N:
-            return 1 ? m_regs.F & 0x40 : 0;
+            return m_regs.F & 0x40 ? 1 : 0;
         case F_H:
-            return 1 ? m_regs.F & 0x20 : 0;
+            return m_regs.F & 0x20 ? 1 : 0;
         case F_C:
-            return 1 ? m_regs.F & 0x10 : 0;
+            return m_regs.F & 0x10 ? 1 : 0;
         default:
             return 0;
     }
@@ -1584,6 +1619,14 @@ void Cpu::writeIERegister(u8 data) {
     m_IERegister = data;
 }
 
+u8 Cpu::readIntFlags() {
+    return m_intFlags;
+}
+
+void Cpu::writeIntFlags(u8 data) {
+    m_intFlags = data;
+}
+
 void Cpu::pushStack(u8 data) {
     m_regs.SP--;
     m_emu->getBus()->write(m_regs.SP, data);
@@ -1648,6 +1691,7 @@ void Cpu::requestInterrupt(InterruptType inter) {
 
 bool Cpu::checkInt(u16 address, InterruptType inter) {
     if((m_intFlags & inter) && (m_IERegister & inter)) {
+       
         handleInt(address);
         m_intFlags = m_intFlags & (~inter);
         m_halted = false;
@@ -1676,3 +1720,22 @@ void Cpu::handleInterrupts() {
 
     } 
 }
+
+void Cpu::dbgUpate() {
+    if(m_emu->getBus()->read(0xFF02) == 0x81) {
+        
+        char msg = m_emu->getBus()->read(0xFF01);
+        m_dbgMessage[m_msgSize] = msg;
+        m_msgSize++;
+        m_emu->getBus()->write(0xFF02, 0);
+    }
+}
+
+#include <string.h>
+
+void Cpu::dbgPrint() {
+    if(m_dbgMessage[0]) {
+        std::cout << "DBG: " << m_dbgMessage << std::endl;
+    }
+}
+

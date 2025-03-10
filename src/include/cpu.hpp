@@ -185,6 +185,14 @@ class Cpu {
         void jumpToAddress(u16 address, bool shouldJump, bool pushPC, bool countCycle = true);
         void requestInterrupt(InterruptType inter);
         void handleInterrupts();
+        void writeIntFlags(u8 value);
+        u8 readIntFlags();
+
+        // Debug
+        void dbgUpate();
+        void dbgPrint();
+        char m_dbgMessage[1024] = {0};
+        int m_msgSize = 0;
         
 
     private:
@@ -198,6 +206,8 @@ class Cpu {
         bool m_enablingIME = false;
         u8 m_IERegister;
         u8 m_intFlags;
+
+        u32 m_ticks;
 
         bool checkInt(u16 address, InterruptType intType);
         void handleInt(u16 address);

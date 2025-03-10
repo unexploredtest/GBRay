@@ -27,10 +27,9 @@ u8 Bus::read(u16 address) {
         std::cout << "WARNING: Bus read address 0x" << std::hex <<
             (int)address << " not supported!" << std::endl;
     } else if(address < 0xFF80) { // I/O Registers
-        std::cout << "WARNING: Bus read address 0x" << std::hex <<
-            (int)address << " not supported!" << std::endl;
+        return m_emu->getIO()->read(address - 0xFF00);
     } else if(address < 0xFFFF) { // HRAM
-        return m_emu->getRam()->readWRam(address - 0xFF80); 
+        return m_emu->getRam()->readHRam(address - 0xFF80); 
     } else if(address == 0xFFFF) { // IE Register
         return m_emu->getCpu()->readIERegister();
     }
@@ -40,14 +39,14 @@ u8 Bus::read(u16 address) {
 
 void Bus::write(u16 address, u8 value) {
     if(address < 0x8000) {
-        return m_emu->getCart()->write(address, value);
+        m_emu->getCart()->write(address, value);
     } else if(address < 0xA000) { // VRAM
         std::cout << "WARNING: Bus write saddress 0x" << std::hex <<
             (int)address << " not supported!" << std::endl;
     } else if(address < 0xC000) { // External RAM, from cartridge
-        return m_emu->getCart()->write(address, value);
+        m_emu->getCart()->write(address, value);
     } else if(address < 0xE000) { // WRAM
-        return m_emu->getRam()->writeWRam(address - 0xC000, value);
+        m_emu->getRam()->writeWRam(address - 0xC000, value);
     } else if(address < 0xFE00) { // Echo RAM
         std::cout << "WARNING: Bus write saddress 0x" << std::hex <<
             (int)address << " is prohibited!" << std::endl;
@@ -58,12 +57,11 @@ void Bus::write(u16 address, u8 value) {
         std::cout << "WARNING: Bus write saddress 0x" << std::hex <<
             (int)address << " not supported!" << std::endl;
     } else if(address < 0xFF80) { // I/O Registers
-        std::cout << "WARNING: Bus write saddress 0x" << std::hex <<
-            (int)address << " not supported!" << std::endl;
+        m_emu->getIO()->write(address - 0xFF00, value);
     } else if(address < 0xFFFF) { // HRAM
-        return m_emu->getRam()->writeWRam(address - 0xFF80, value); 
+        m_emu->getRam()->writeHRam(address - 0xFF80, value); 
     } else if(address == 0xFFFF) { // IE Register
-        return m_emu->getCpu()->writeIERegister(value);
+        m_emu->getCpu()->writeIERegister(value);
     }
 }
 

@@ -23,14 +23,14 @@ void Ram::writeWRam(u16 address, u8 data) {
 
 u8 Ram::readHRam(u16 address) {
     if(address < HRAM_SIZE) {
-        return m_wRam[address];
+        return m_hRam[address];
     } else {
         throw std::runtime_error("ERROR: Address out of bounds!");
     }
 }
 void Ram::writeHRam(u16 address, u8 data) {
     if(address < HRAM_SIZE) {
-        m_wRam[address] = data;
+        m_hRam[address] = data;
     } else {
         throw std::runtime_error("ERROR: Address out of bounds!");
     }
