@@ -9,6 +9,7 @@
 #include "ram.hpp"
 #include "io.hpp"
 #include "timer.hpp"
+#include "ui.hpp"
 
 class Emu {
     public:
@@ -21,6 +22,7 @@ class Emu {
         std::unique_ptr<Cpu>& getCpu();
         std::unique_ptr<IO>& getIO();
         std::unique_ptr<Timer>& getTimer();
+        std::unique_ptr<UI>& getUI();
         
     private:
         bool m_running;
@@ -34,4 +36,5 @@ class Emu {
         std::unique_ptr<Ram> m_ram;
         std::unique_ptr<IO> m_io;
         std::unique_ptr<Timer> m_timer;
+        std::unique_ptr<UI> m_ui;
 };

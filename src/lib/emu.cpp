@@ -7,17 +7,22 @@ Emu::Emu() {
     m_ram = std::make_unique<Ram>(this);
     m_io = std::make_unique<IO>(this);
     m_timer = std::make_unique<Timer>(this);
+    m_ui = std::make_unique<UI>(this);
 }
 
 void Emu::run(std::string filePath) {
     m_cart->loadROM(filePath);
     m_cart->printROMInfo();
+
     std::thread cpuThread = std::thread(&Emu::runCpu, this);
-    // runCpu();
+
+    m_ui->init(320, 240);
+    m_ui->run();
+    m_ui->deinit();
+
+    m_running = false;
     
-    while(!m_die) {
-        continue;
-    }
+    cpuThread.join();
 }
 
 void Emu::runCpu() {
@@ -58,4 +63,8 @@ std::unique_ptr<IO>& Emu::getIO() {
 
 std::unique_ptr<Timer>& Emu::getTimer() {
     return m_timer;
+}
+
+std::unique_ptr<UI>& Emu::getUI() {
+    return m_ui;
 }
