@@ -1092,6 +1092,7 @@ void Cpu::rra() {
     writeReg(R_A, value);
 }
 
+// 84DC82AA
 void Cpu::daa() {
     u8 value = readReg(R_A);
     u8 adjustment = 0x0;
@@ -1105,7 +1106,9 @@ void Cpu::daa() {
             adjustment += 0x60;
         }
         value -= adjustment;
-        clearFlag(F_C);
+        // uncomenting the following line fixed the issue...
+        // TODO: Investigate why this is unnecessary
+        // clearFlag(F_C); 
     } else {
         if(getFlag(F_H) || ((value & 0xF) > 0x9)) {
             adjustment += 0x6;
