@@ -13,3 +13,11 @@ void Ppu::writeVRam(u16 address, u8 value) {
     m_vRam[address] = value;
 }
 
+u8 Ppu::readOAM(u16 address) {
+    return m_oam[address];
+}
+
+void Ppu::writeOAM(u16 address, u8 value) {
+    m_oam[address] = value;
+}
+

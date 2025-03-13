@@ -1,5 +1,7 @@
 #include "io.hpp"
 
+static u8 lol = 0;
+
 IO::IO(Emu* emu) {
     m_emu = emu;
 }
@@ -19,6 +21,14 @@ u8 IO::read(u16 address) {
             return m_emu->getTimer()->read(TT_TAC);
         case 0x0F:
             return m_emu->getCpu()->readIntFlags();
+        case 0x44:
+            return lol++;
+        case 0x46:
+            if(m_emu->getDma()->isTransferring()) {
+                return 0xFF;
+            } else {
+                return 0;
+            }
         default:
             std::cout << "WARNING: IO read address 0x" << std::hex <<
             (int)address + 0xFF00 << " not supported!" << std::endl;
@@ -47,12 +57,14 @@ void IO::write(u16 address, u8 value) {
         case 0x0F:
             m_emu->getCpu()->writeIntFlags(value);
             break;
+        case 0x46:
+            m_emu->getDma()->start(value);
+            break;
         default:
             std::cout << "WARNING: IO write address 0x" << std::hex <<
             (int)address + 0xFF00 << " not supported!" << std::endl;
             break;
     }
-    
 }
 
 

@@ -9,6 +9,7 @@ Emu::Emu() {
     m_io = std::make_unique<IO>(this);
     m_timer = std::make_unique<Timer>(this);
     m_ui = std::make_unique<UI>(this);
+    m_dma = std::make_unique<Dma>(this);
 }
 
 void Emu::run(std::string filePath) {
@@ -72,4 +73,8 @@ std::unique_ptr<Timer>& Emu::getTimer() {
 
 std::unique_ptr<UI>& Emu::getUI() {
     return m_ui;
+}
+
+std::unique_ptr<Dma>& Emu::getDma() {
+    return m_dma;
 }

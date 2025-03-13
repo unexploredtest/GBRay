@@ -329,9 +329,12 @@ void Cpu::step() {
 }
 
 void Cpu::cycle(int ticks) {
-    for(int i = 0; i < 4*ticks; i++) {
-        m_ticks++;
-        m_emu->getTimer()->tick();
+    for(int i = 0; i < ticks; i++) {
+        for(int j = 0; j < 4; j++) {
+            m_ticks++;
+            m_emu->getTimer()->tick();
+        }
+        m_emu->getDma()->tick();
     }
 }
 

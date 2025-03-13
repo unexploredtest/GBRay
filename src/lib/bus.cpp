@@ -22,8 +22,7 @@ u8 Bus::read(u16 address) {
         std::cout << "WARNING: Bus read address 0x" << std::hex <<
             (int)address << " is prohibited!" << std::endl;
     } else if(address < 0xFEA0) { // Object attribute memory
-        std::cout << "WARNING: Bus read address 0x" << std::hex <<
-            (int)address << " not supported!" << std::endl;
+        return m_emu->getPpu()->readOAM(address);
     } else if(address < 0xFF00) { // Not Usable
         std::cout << "WARNING: Bus read address 0x" << std::hex <<
             (int)address << " not supported!" << std::endl;
@@ -51,8 +50,7 @@ void Bus::write(u16 address, u8 value) {
         std::cout << "WARNING: Bus write saddress 0x" << std::hex <<
             (int)address << " is prohibited!" << std::endl;
     } else if(address < 0xFEA0) { // Object attribute memory
-        std::cout << "WARNING: Bus write saddress 0x" << std::hex <<
-            (int)address << " not supported!" << std::endl;
+        m_emu->getPpu()->writeOAM(address, value);
     } else if(address < 0xFF00) { // Not Usable
         std::cout << "WARNING: Bus write saddress 0x" << std::hex <<
             (int)address << " not supported!" << std::endl;

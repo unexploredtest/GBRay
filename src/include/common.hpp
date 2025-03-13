@@ -26,3 +26,4 @@ class IO;
 class Timer;
 class UI;
 class Ppu;
+class Dma;
