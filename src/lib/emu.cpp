@@ -4,6 +4,7 @@ Emu::Emu() {
     m_cart = std::make_unique<Cart>(this);
     m_bus = std::make_unique<Bus>(this);
     m_cpu = std::make_unique<Cpu>(this);
+    m_ppu = std::make_unique<Ppu>(this);
     m_ram = std::make_unique<Ram>(this);
     m_io = std::make_unique<IO>(this);
     m_timer = std::make_unique<Timer>(this);
@@ -55,6 +56,10 @@ std::unique_ptr<Ram>& Emu::getRam() {
 
 std::unique_ptr<Cpu>& Emu::getCpu() {
     return m_cpu;
+}
+
+std::unique_ptr<Ppu>& Emu::getPpu() {
+    return m_ppu;
 }
 
 std::unique_ptr<IO>& Emu::getIO() {

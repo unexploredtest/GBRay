@@ -25,3 +25,4 @@ class Ram;
 class IO;
 class Timer;
 class UI;
+class Ppu;
