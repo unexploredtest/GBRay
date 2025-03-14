@@ -1163,9 +1163,9 @@ void Cpu::halt() {
 }
 
 void Cpu::ld() {
-    if(m_curInst.addrMode == AM_MR_R && m_curInst.reg1 == R_C) {
-        m_curInstData.param1 += 0xFF00;
-    }
+    // if(m_curInst.addrMode == AM_MR_R && m_curInst.reg1 == R_C) {
+    //     m_curInstData.param1 += 0xFF00;
+    // }
 
     if(m_curInst.reg2 == R_SP) {
         // Because this is a unique addressing mode (2 regs and e8) we just
@@ -1372,7 +1372,11 @@ void Cpu::putData(u16 data) {
             break;
         case AM_MR_R:
             // writeReg(m_curInst.reg1, data);
-            m_emu->getBus()->write(readReg(m_curInst.reg1), data);
+            if(m_curInst.reg1 == R_C) {
+                m_emu->getBus()->write(readReg(m_curInst.reg1) + 0xFF00, data);
+            } else {
+                m_emu->getBus()->write(readReg(m_curInst.reg1), data);
+            }
             break;
         case AM_HLI_R:
             // writeReg(m_curInst.reg1, data);
