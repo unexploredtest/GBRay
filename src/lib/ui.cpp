@@ -50,7 +50,7 @@ void UI::drawTiles() {
                 for(int pixel = 7; pixel >= 0; pixel--) {
                     u8 lowBit = (lowByte & (1 << pixel)) >> pixel;
                     u8 highBit = (highByte & (1 << pixel)) >> pixel;
-                    int colorIndex = highBit | lowBit;
+                    int colorIndex = (highBit << 1) | lowBit;
 
                     Color color = COLORS[colorIndex];
                     Rectangle pixelRec = {(x*8+(7 - pixel))*SCALE, (y*8+line)*SCALE, SCALE, SCALE};
