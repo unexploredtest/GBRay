@@ -1188,6 +1188,12 @@ void Cpu::ld() {
             setFlag(F_C);
         }
         putData(result);
+    } else if(m_curInst.reg1 == R_SP && AM_MN16_R) {
+        // We require special handling here, can't just use the method putData
+        u16 address = m_curInstData.param1;
+        m_emu->getBus()->write(address, m_curInstData.param2 & 0xFF);
+        m_emu->getBus()->write(address + 1, m_curInstData.param2 >> 8);
+
     } else {
         putData(m_curInstData.param2);
     }
