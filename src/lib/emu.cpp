@@ -10,6 +10,7 @@ Emu::Emu() {
     m_timer = std::make_unique<Timer>(this);
     m_ui = std::make_unique<UI>(this);
     m_dma = std::make_unique<Dma>(this);
+    m_lcd = std::make_unique<Lcd>(this);
 }
 
 void Emu::run(std::string filePath) {
@@ -32,7 +33,7 @@ void Emu::runCpu() {
 
     m_running = true;
     m_paused = false;
-    // m_ticks = 0;
+    m_ticks = 0;
     while(m_running) {
         std::cout << "Step number: " << std::hex << (int)m_ticks << ":" << std::endl;
         if(m_paused) {
@@ -40,6 +41,14 @@ void Emu::runCpu() {
         }
 
         m_cpu->step();
+        // 0x2d000 - 0x2f000 (inst)
+        // 0x2d8aa - 0x2d8ab (A) - address DD02
+        // 2d710 - -0x2d804 - Stack Pointer
+        // 0xc65b - address DD01
+        // if(m_ticks == 0x403d) {
+        //     std::cin.get();
+        // }
+        m_ticks++;
     }
 }
 
@@ -77,4 +86,8 @@ std::unique_ptr<UI>& Emu::getUI() {
 
 std::unique_ptr<Dma>& Emu::getDma() {
     return m_dma;
+}
+
+std::unique_ptr<Lcd>& Emu::getLcd() {
+    return m_lcd;
 }

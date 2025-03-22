@@ -12,6 +12,7 @@
 #include "ui.hpp"
 #include "ppu.hpp"
 #include "dma.hpp"
+#include "lcd.hpp"
 
 class Emu {
     public:
@@ -27,6 +28,7 @@ class Emu {
         std::unique_ptr<UI>& getUI();
         std::unique_ptr<Ppu>& getPpu();
         std::unique_ptr<Dma>& getDma();
+        std::unique_ptr<Lcd>& getLcd();
         
     private:
         bool m_running;
@@ -43,4 +45,5 @@ class Emu {
         std::unique_ptr<Timer> m_timer;
         std::unique_ptr<UI> m_ui;
         std::unique_ptr<Dma> m_dma;
+        std::unique_ptr<Lcd> m_lcd;
 };

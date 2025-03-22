@@ -10,6 +10,7 @@ u8 Ppu::readVRam(u16 address) {
 }
 
 void Ppu::writeVRam(u16 address, u8 value) {
+    std::cout << address << std::endl;
     m_vRam[address] = value;
 }
 

@@ -27,3 +27,4 @@ class Timer;
 class UI;
 class Ppu;
 class Dma;
+class Lcd;

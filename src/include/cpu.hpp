@@ -187,6 +187,7 @@ class Cpu {
         void handleInterrupts();
         void writeIntFlags(u8 value);
         u8 readIntFlags();
+        void writeCpuInfo();
 
         // Debug
         void dbgUpate();
