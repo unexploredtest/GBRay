@@ -17,6 +17,13 @@ struct LcdRegs {
     u8 obp1;
 };
 
+enum StatInt {
+    SI_MD0 = 1 >> 3,
+    SI_MD1 = 1 >> 4,
+    SI_MD2 = 1 >> 5,
+    SI_LY = 1 >> 6,
+};
+
 class Lcd {
     public:
         Lcd(Emu* emu);
@@ -30,9 +37,11 @@ class Lcd {
         u8 getObjectSize();
         bool isObjectEnabled();
         bool isBGWindowEnabled();
+        void sendInterrupt(StatInt interrupt);
         bool isStatIntEnabled();
-
-
+        void checkLCY();
+        void incrementLy();
+        u8 getLy();
 
     private:
         Emu* m_emu;

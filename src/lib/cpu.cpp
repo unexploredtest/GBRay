@@ -334,6 +334,7 @@ void Cpu::cycle(int ticks) {
         for(int j = 0; j < 4; j++) {
             m_ticks++;
             m_emu->getTimer()->tick();
+            m_emu->getPpu()->tick();
         }
         m_emu->getDma()->tick();
     }

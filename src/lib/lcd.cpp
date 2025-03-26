@@ -40,6 +40,33 @@ bool Lcd::isBGWindowEnabled() {
     return (m_regs.lcdc & (1 << 0));
 }
 
+void Lcd::sendInterrupt(StatInt interrupt) {
+    if(m_regs.stat & interrupt) {
+        m_emu->getCpu()->requestInterrupt(IT_LCD_STAT);
+    }
+}
+
+void Lcd::checkLCY() {
+    if(m_regs.ly == m_regs.lyc) {
+        m_regs.stat = m_regs.stat | 0b100; 
+        sendInterrupt(SI_LY);
+    } else {
+        m_regs.stat = m_regs.stat & 0b1111011;
+    }
+}
+
+u8 Lcd::getLy() {
+    return m_regs.ly;
+}
+
+void Lcd::incrementLy() {
+    m_regs.ly++;
+    if(m_regs.ly > 153) {
+        m_regs.ly = 0;
+    }
+    checkLCY();
+}
+
 u8 Lcd::read(u16 address) {
     switch (address) {
         case 0x0:
@@ -76,7 +103,7 @@ void Lcd::write(u16 address, u8 value) {
         case 0x0:
             m_regs.lcdc = value; 
         case 0x1:
-            m_regs.stat = value;
+            m_regs.stat = (m_regs.stat & 0b111) | (value & 0b1111000);
         case 0x2:
             m_regs.scy = value;
         case 0x3:
