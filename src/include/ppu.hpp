@@ -18,7 +18,10 @@ class Ppu {
         void writeVRam(u16 address, u8 value);
         u8 readOAM(u16 address);
         void writeOAM(u16 address, u8 value);
-        void incrementLine();
+        void runHBlank();
+        void runVBlank();
+        void runOAM();
+        void runDRAW();
 
     private:
         Emu* m_emu;
