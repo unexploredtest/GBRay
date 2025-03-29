@@ -296,7 +296,7 @@ void Cpu::init() {
 
 void Cpu::step() {
     if(!m_halted) {
-        printCPUInfo();
+        // printCPUInfo();
         u8 opcode = m_emu->getBus()->read(m_regs.PC);
         m_regs.PC++;
         cycle(1);
@@ -326,7 +326,7 @@ void Cpu::step() {
 
     dbgUpate();
     dbgPrint();
-    writeCpuInfo();
+    // writeCpuInfo();
     // std::cin.get();
 }
 
