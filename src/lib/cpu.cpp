@@ -326,7 +326,8 @@ void Cpu::step() {
 
     dbgUpate();
     dbgPrint();
-    // writeCpuInfo();
+    writeCpuInfo();
+    // std::cin.get();
 }
 
 void Cpu::cycle(int ticks) {
@@ -1178,15 +1179,16 @@ void Cpu::ld() {
         cycle(1);
 
         u16 result = m_curInstData.param2 + (i8)value;
+
         clearFlag(F_Z);
         clearFlag(F_N);
         clearFlag(F_H);
         clearFlag(F_C);
-        if((m_curInstData.param1 & 0xF + m_curInstData.param2 & 0xF) >= 0x10) {
+        
+        if((m_curInstData.param2 & 0xF) + (value & 0xF) >= 0x10) {
             setFlag(F_H);
         }
-
-        if((m_curInstData.param1 & 0xFF + m_curInstData.param2 & 0xFF) >= 0x100) {
+        if((m_curInstData.param2 & 0xFF) + (value & 0xFF) >= 0x100) {
             setFlag(F_C);
         }
         putData(result);
@@ -1364,7 +1366,7 @@ void Cpu::putData(u16 data) {
             writeReg(m_curInst.reg1, data);
             break;
         case AM_MR:
-            m_emu->getBus()->write(m_curInst.reg1, data);
+            m_emu->getBus()->write(readReg(m_curInst.reg1), data);
             break;
         case AM_R_N8:
             writeReg(m_curInst.reg1, data);
