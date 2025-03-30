@@ -14,7 +14,13 @@ void UI::run() {
     m_showTiles = true;
     while (!WindowShouldClose()) {
         input();
+        
+        // if(m_paused) {
+        //     ClearBackground(RAYWHITE);
+        //     continue;
+        // }
         BeginDrawing();
+
 
             if(m_showTiles){
                 drawTiles();
@@ -30,6 +36,11 @@ void UI::run() {
 void UI::input() {
     if(IsKeyPressed(KEY_D)) {
         m_showTiles = !m_showTiles;
+    } 
+
+    if(IsKeyPressed(KEY_P)) {
+        m_paused = !m_paused;
+        // std::cin.get();
     } 
 }
 
@@ -53,10 +64,14 @@ void UI::drawTiles() {
                     int colorIndex = (highBit << 1) | lowBit;
 
                     Color color = COLORS[colorIndex];
-                    Rectangle pixelRec = {(x*8+(7 - pixel))*SCALE, (y*8+line)*SCALE, SCALE, SCALE};
+                    Rectangle pixelRec = {static_cast<float>((x*8+(7 - pixel))*SCALE), static_cast<float>((y*8+line)*SCALE), SCALE, SCALE};
                     DrawRectangleRec(pixelRec, color);
                 }
             }
         }
     }
+}
+
+bool UI::isPaused() {
+    return m_paused;
 }

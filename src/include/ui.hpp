@@ -13,10 +13,12 @@ class UI {
         void run();
         void deinit();
         void drawTiles();
+        bool isPaused();
     
     private:
         Emu* m_emu;
         bool m_showTiles;
+        bool m_paused = false;
         static const int SCALE = 3;
         static const int TILE_HIZ = 24;
         static const int TILE_VER = 16;

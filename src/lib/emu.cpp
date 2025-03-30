@@ -32,22 +32,13 @@ void Emu::runCpu() {
     m_cpu->init();
 
     m_running = true;
-    m_paused = false;
     m_ticks = 0;
     while(m_running) {
-        std::cout << "Step number: " << std::hex << (int)m_ticks << ":" << std::endl;
-        if(m_paused) {
+        if(m_ui->isPaused()) {
             continue;
         }
 
         m_cpu->step();
-        // 0x2d000 - 0x2f000 (inst)
-        // 0x2d8aa - 0x2d8ab (A) - address DD02
-        // 2d710 - -0x2d804 - Stack Pointer
-        // 0xc65b - address DD01
-        // if(m_ticks == 0x403d) {
-        //     std::cin.get();
-        // }
         m_ticks++;
     }
 }
