@@ -1,7 +1,7 @@
 #include "cpu.hpp"
 
-static const std::array<Instruction, 0xFF> INSTRUCTIONS = [] {
-    std::array<Instruction, 0xFF> temp = {};
+static const std::array<Instruction, 0x100> INSTRUCTIONS = [] {
+    std::array<Instruction, 0x100> temp = {};
     temp.fill(Instruction{}); // Unassigned values get the default NONE instruction
     temp[0x00] = Instruction{IN_NOP};
     temp[0x01] = Instruction{IN_LD, AM_R_N16, R_BC};
