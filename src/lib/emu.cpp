@@ -17,6 +17,9 @@ void Emu::run(std::string filePath) {
     m_cart->loadROM(filePath);
     m_cart->printROMInfo();
 
+    m_ppu->init();
+    m_lcd->init();
+
     std::thread cpuThread = std::thread(&Emu::runCpu, this);
 
     m_ui->init(320, 240);
@@ -32,14 +35,14 @@ void Emu::runCpu() {
     m_cpu->init();
 
     m_running = true;
-    m_ticks = 0;
+    // m_ticks = 0;
     while(m_running) {
         if(m_ui->isPaused()) {
             continue;
         }
 
         m_cpu->step();
-        m_ticks++;
+        // m_ticks++;
     }
 }
 

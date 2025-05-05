@@ -1,7 +1,6 @@
 #include "io.hpp"
 #include "lcd.hpp"
 
-// static u8 lol = 0;
 
 IO::IO(Emu* emu) {
     m_emu = emu;
@@ -22,8 +21,6 @@ u8 IO::read(u16 address) {
             return m_emu->getTimer()->read(TT_TAC);
         case 0x0F:
             return m_emu->getCpu()->readIntFlags();
-        // case 0x44:
-        //     return lol++;
         case 0x46:
             if(m_emu->getDma()->isTransferring()) {
                 return 0xFF;
@@ -74,10 +71,3 @@ void IO::write(u16 address, u8 value) {
             break;
     }
 }
-
-
-// std::cout << "WARNING: Bus read address 0x" << std::hex <<
-//             (int)address << " not supported!" << std::endl;
-
-// std::cout << "WARNING: Bus write saddress 0x" << std::hex <<
-//             (int)address << " not supported!" << std::endl;

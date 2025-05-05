@@ -324,8 +324,8 @@ void Cpu::step() {
         m_intMasterEnabled = true;
     }
 
-    dbgUpate();
-    dbgPrint();
+    // dbgUpate();
+    // dbgPrint();
     // writeCpuInfo();
     // std::cin.get();
 }
@@ -342,7 +342,7 @@ void Cpu::cycle(int ticks) {
 }
 
 void Cpu::fetchInstuction(u8 opcode) {
-    std::cout << "INFO: Running instruction " << std::hex << (int)opcode << std::endl;
+    // std::cout << "INFO: Running instruction " << std::hex << (int)opcode << std::endl;
     if(INSTRUCTIONS[opcode].insType == IN_NONE) {
         throw std::runtime_error("ERROR: Unsupported opcode!");
     }
@@ -669,6 +669,8 @@ void Cpu::CP() {
     setFlag(F_N);
     clearFlag(F_C);
     clearFlag(F_H);
+    // std::cout << "LOL1: " << m_curInstData.param1 << std::endl;
+    // std::cout << "LOL2: " << m_curInstData.param2 << std::endl;
     if(m_curInstData.param1 == m_curInstData.param2) {
         setFlag(F_Z);
     }
@@ -1756,6 +1758,10 @@ void Cpu::dbgUpate() {
 void Cpu::dbgPrint() {
     if(m_dbgMessage[0]) {
         std::cout << "DBG: " << m_dbgMessage << std::endl;
+        // if (strstr(m_dbgMessage, "assed") != 0) {
+        //     std::cout << "Tasked finished!" << std::endl;
+        //     std::cin.get();
+        // }
     }
 }
 

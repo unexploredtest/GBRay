@@ -12,8 +12,6 @@ u8 Bus::read(u16 address) {
         return m_emu->getCart()->read(address);
     } else if(address < 0xA000) { // VRAM
         return m_emu->getPpu()->readVRam(address - 0x8000);
-        // std::cout << "WARNING: Bus read address 0x" << std::hex <<
-        //     (int)address << " not supported!" << std::endl;
     } else if(address < 0xC000) { // External RAM, from cartridge
         return m_emu->getCart()->read(address);
     } else if(address < 0xE000) { // WRAM

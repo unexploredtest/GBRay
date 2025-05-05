@@ -1,0 +1,116 @@
+#include "ppu.hpp"
+
+void Ppu::BGFetch() {
+    if(m_BGFetchData.currentFetchMode != FM_PUSH && !m_BGFetchData.shouldFetch) {
+        m_BGFetchData.shouldFetch = true;
+        return;
+    }
+
+    switch(m_BGFetchData.currentFetchMode) {
+        case FM_TILE: {
+            if(m_emu->getLcd()->isBGWindowEnabled()) {
+                u8 scx = m_emu->getLcd()->getRegs().scx;
+                u8 scy = m_emu->getLcd()->getRegs().scy;
+                u8 ly = m_emu->getLcd()->getRegs().ly;
+
+                u16 offset;
+                if(m_emu->getLcd()->backgroundTileMapMode() == 1) {
+                    offset = SECOND_MAP_OFFSET;
+                } else {
+                    offset = FIRST_MAP_OFFSET;
+                }
+                u8 index = m_emu->getBus()->read(offset + (((scx + m_BGFetchData.xPos) / 8) & 0x1F) + 32 * (((ly + scy) & 0xFF) / 8));
+                m_BGFetchData.tileIndex = index;
+            } else {
+                m_BGFetchData.tileIndex = 0;
+            }
+            m_BGFetchData.xPos += 8;
+            m_BGFetchData.currentFetchMode = FM_LOWDATA;
+            break;
+        }
+
+        case FM_LOWDATA: {
+            u8 scy = m_emu->getLcd()->getRegs().scy;
+            u8 ly = m_emu->getLcd()->getRegs().ly;
+            u8 lowByte;
+            if(m_emu->getLcd()->tileDataMode() == 1) {
+                lowByte = m_emu->getBus()->read(FIRST_TILE_OFFSET + m_BGFetchData.tileIndex * 16 + 2 * ((ly + scy) % 8));
+            } else {
+                if(m_BGFetchData.tileIndex <= 127) {
+                    lowByte = m_emu->getBus()->read(THIRD_TILE_OFFSET + m_BGFetchData.tileIndex * 16 + 2 * ((ly + scy) % 8));
+                } else {
+                    lowByte = m_emu->getBus()->read(SECOND_TILE_OFFSET + (m_BGFetchData.tileIndex - 128) * 16 + 2 * ((ly + scy) % 8));
+                }
+            }
+            m_BGFetchData.tileLow = lowByte;
+            m_BGFetchData.currentFetchMode = FM_HIGHDATA;
+            break;
+        }
+            
+        case FM_HIGHDATA: {
+            u8 scy = m_emu->getLcd()->getRegs().scy;
+            u8 ly = m_emu->getLcd()->getRegs().ly;
+            u8 highByte;
+            if(m_emu->getLcd()->tileDataMode() == 1) {
+                highByte = m_emu->getBus()->read(FIRST_TILE_OFFSET + 1 + m_BGFetchData.tileIndex * 16 + 2 * ((ly + scy) % 8));
+            } else {
+                if(m_BGFetchData.tileIndex <= 127) {
+                    highByte = m_emu->getBus()->read(THIRD_TILE_OFFSET + 1 + m_BGFetchData.tileIndex * 16 + 2 * ((ly + scy) % 8));
+                } else {
+                    highByte = m_emu->getBus()->read(SECOND_TILE_OFFSET + 1 + (m_BGFetchData.tileIndex - 128) * 16 + 2 * ((ly + scy) % 8));
+                }
+            }
+            m_BGFetchData.tileHigh = highByte;
+            m_BGFetchData.currentFetchMode = FM_SLEEP;
+            break;
+        }
+        case FM_SLEEP:
+            m_BGFetchData.currentFetchMode = FM_PUSH;
+            break;
+        case FM_PUSH: {
+            if(BGPush()) {
+                m_BGFetchData.currentFetchMode = FM_TILE;
+            } 
+            break;
+        }
+            
+    }
+
+    m_BGFetchData.shouldFetch = false;
+}
+
+bool Ppu::BGPush() {
+    if(m_BGFetchData.fifo.getSize() > 8) {
+        return false;
+    }
+
+    u8 lowByte = m_BGFetchData.tileLow;
+    u8 highByte = m_BGFetchData.tileHigh;
+
+    for(int pixelIndex = 7; pixelIndex >= 0; pixelIndex--) {
+        Pixel pixel;
+        u8 lowBit = (lowByte & (1 << pixelIndex)) >> pixelIndex;
+        u8 highBit = (highByte & (1 << pixelIndex)) >> pixelIndex;
+        int colorIndex = (highBit << 1) | lowBit;
+        
+        pixel.colorIndex = colorIndex;
+        m_BGFetchData.fifo.push(pixel);
+    }
+    return true;
+}
+
+void Ppu::BGDraw() {
+    
+    if(m_BGFetchData.fifo.getSize() > 8) {
+        u8 scy = m_emu->getLcd()->getRegs().scy;
+        u8 ly = m_emu->getLcd()->getRegs().ly;
+        Pixel pixel = m_BGFetchData.fifo.pop();
+        m_video[m_BGFetchData.xPushPos + (ly)*WIDTH_SIZE] = pixel.colorIndex;
+        m_BGFetchData.xPushPos++;
+    }
+}
+
+void Ppu::runPipeline() {
+    BGFetch();
+    BGDraw();
+}

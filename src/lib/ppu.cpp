@@ -5,12 +5,18 @@ Ppu::Ppu(Emu* emu) {
     m_emu = emu;
 }
 
+void Ppu::init() {
+    m_currentLine = 0;
+    m_currentTick = 0;
+    m_currentMode = PM_OAM;
+}
+
 u8 Ppu::readVRam(u16 address) {
     return m_vRam[address];
 }
 
 void Ppu::writeVRam(u16 address, u8 value) {
-    std::cout << address << std::endl;
+    // std::cout << address << std::endl;
     m_vRam[address] = value;
 }
 
@@ -23,11 +29,11 @@ void Ppu::writeOAM(u16 address, u8 value) {
 }
 
 void Ppu::runHBlank() {
-    if(m_currentTick > 456) {
+    if(m_currentTick >= LINE_TCIKS) {
         m_emu->getLcd()->incrementLy();
         m_currentTick = 0;
 
-        if(m_currentLine > 143) {
+        if(m_emu->getLcd()->getLy() >= PPU_LINES) {
             m_currentMode = PM_VBLANK;
             m_emu->getCpu()->requestInterrupt(IT_VBLANK);
             m_emu->getLcd()->sendInterrupt(SI_MD1);
@@ -39,10 +45,9 @@ void Ppu::runHBlank() {
 }
 
 void Ppu::runVBlank() {
-    m_emu->getLcd()->incrementLy();
-
-    if(m_currentTick > 456) {
+    if(m_currentTick >= LINE_TCIKS) {
         m_currentTick = 0;
+        m_emu->getLcd()->incrementLy();
 
         if(m_emu->getLcd()->getLy() == 0) {
             m_currentMode = PM_OAM;
@@ -52,19 +57,26 @@ void Ppu::runVBlank() {
 }
 
 void Ppu::runOAM() {
-    if(m_currentTick > 80) {
+    if(m_currentTick >= OAM_TICKS) {
         m_currentMode = PM_DRAW;
+        m_BGFetchData = BGFetchData{};
+        m_BGFetchData.xPos = 0;
+        m_BGFetchData.xPushPos = 0;
     }
 }
 
 void Ppu::runDRAW() {
-    if(m_currentTick > 172 + 80) {
+    runPipeline();
+
+    // if(m_currentTick > 172 + OAM_TICKS) {
+    if(m_BGFetchData.xPushPos >= 160) {
+        m_BGFetchData.fifo.reset();
         m_currentMode = PM_HBLANK;
         m_emu->getLcd()->sendInterrupt(SI_MD0);
     }
 }
 
-
+static int lol = 0;
 
 void Ppu::tick() {
     m_currentTick++;
@@ -77,4 +89,9 @@ void Ppu::tick() {
     } else if(m_currentMode == PM_VBLANK) {
         runVBlank();
     }
+    m_emu->getLcd()->changePPUMode(m_currentMode);
+}
+
+u8* Ppu::getVideo() {
+    return m_video;
 }

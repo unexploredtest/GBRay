@@ -23,9 +23,12 @@ void UI::run() {
 
 
             if(m_showTiles){
+                SetWindowSize(TILE_HIZ*8*SCALE, TILE_VER*8*SCALE);
                 drawTiles();
             } else {
+                SetWindowSize(WIDTH_SIZE*SCALE, HEIGHT_SIZE*SCALE);
                 ClearBackground(RAYWHITE);
+                drawLCD();
             }
             
 
@@ -40,7 +43,6 @@ void UI::input() {
 
     if(IsKeyPressed(KEY_P)) {
         m_paused = !m_paused;
-        // std::cin.get();
     } 
 }
 
@@ -74,4 +76,21 @@ void UI::drawTiles() {
 
 bool UI::isPaused() {
     return m_paused;
+}
+
+void UI::drawLCD() {
+    u8* video = m_emu->getPpu()->getVideo();
+    Image gameVid = GenImageColor(WIDTH_SIZE, HEIGHT_SIZE, RAYWHITE);
+    for(int y = 0; y < HEIGHT_SIZE; y++) {
+        for(int x = 0; x < WIDTH_SIZE; x++) {
+            ImageDrawPixel(&gameVid, x, y, COLORS[video[y*WIDTH_SIZE + x]]);
+        }
+    }
+    Texture2D texture = LoadTextureFromImage(gameVid);
+    UnloadImage(gameVid);
+    // DrawTexture(texture, 0, 0, RAYWHITE);
+    Rectangle srcRec = {0.0f, 0.0f, WIDTH_SIZE, HEIGHT_SIZE};
+    Rectangle desRec = {0, 0, WIDTH_SIZE*SCALE, HEIGHT_SIZE*SCALE};
+    Vector2 org = {0.0f, 0.0f};
+    DrawTexturePro(texture, srcRec, desRec, org, 0, RAYWHITE);
 }

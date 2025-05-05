@@ -3,6 +3,8 @@
 #include "common.hpp"
 #include "emu.hpp"
 
+// static const u8 WIDTH_SIZE = 160;
+// static const u8 HEIGHT_SIZE = 144;
 
 class UI {
     public:
@@ -13,6 +15,7 @@ class UI {
         void run();
         void deinit();
         void drawTiles();
+        void drawLCD();
         bool isPaused();
     
     private:

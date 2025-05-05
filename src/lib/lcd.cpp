@@ -4,6 +4,14 @@ Lcd::Lcd(Emu* emu) {
     m_emu = emu;
 }
 
+void Lcd::init() {
+    m_regs = {0};
+    m_regs.lcdc = 0x91;
+    m_regs.bgp = 0xFC;
+    m_regs.obp0 = 0xFF;
+    m_regs.obp1 = 0xFF;
+}
+
 bool Lcd::isEnabled() {
     return (m_regs.lcdc & (1 << 7));
 }
@@ -61,10 +69,11 @@ u8 Lcd::getLy() {
 
 void Lcd::incrementLy() {
     m_regs.ly++;
-    if(m_regs.ly > 153) {
+    checkLCY();
+    if(m_regs.ly >= MAX_LINES) {
         m_regs.ly = 0;
     }
-    checkLCY();
+    
 }
 
 u8 Lcd::read(u16 address) {
@@ -102,29 +111,47 @@ void Lcd::write(u16 address, u8 value) {
     switch (address) {
         case 0x0:
             m_regs.lcdc = value; 
+            break;
         case 0x1:
             m_regs.stat = (m_regs.stat & 0b111) | (value & 0b1111000);
+            break;
         case 0x2:
             m_regs.scy = value;
+            break;
         case 0x3:
             m_regs.scx = value;
+            break;
         case 0x4:
-            m_regs.ly = value;
+            break;
         case 0x5:
             m_regs.lyc = value;
+            break;
         case 0x7:
             m_regs.bgp = value;
+            break;
         case 0x8:
-            m_regs.obp0 = value;
+            m_regs.obp0 = value & 0b11111100;
+            break;
         case 0x9:
-            m_regs.obp1 = value;
+            m_regs.obp1 = value & 0b11111100;
+            break;
         case 0xA:
             m_regs.wy = value;
+            break;
         case 0xB:
             m_regs.wx = value;
+            break;
         default:
             std::cout << "WARNING: LCD write address 0x" << std::hex <<
             (int)address + 0xFF40 << " not supported!" << std::endl;
     }
 }
 
+void Lcd::changePPUMode(u8 mode) {
+    m_regs.stat &= 0b11111100;
+    m_regs.stat |= (mode & 0b11);
+}
+
+LcdRegs Lcd::getRegs() {
+    return m_regs;
+}
