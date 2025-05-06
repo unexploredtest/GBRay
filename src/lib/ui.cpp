@@ -27,6 +27,10 @@ void UI::run() {
                 ClearBackground(RAYWHITE);
                 drawLCD();
             }
+
+            if(m_paused) {
+                drawPaused();
+            }
             
         EndDrawing();
     }
@@ -151,4 +155,17 @@ void UI::drawLCD() {
         ClearBackground(BLACK);
         DrawTexturePro(m_gameText, srcRec, desRec, org, 0, RAYWHITE);
     }
+}
+
+void UI::drawPaused() {
+    int screenWidth = GetScreenWidth();
+    int screenHeight = GetScreenHeight();
+
+    int fontSize = screenHeight / 9;
+
+    const char *text = "paused";
+    Vector2 textSize = MeasureTextEx(GetFontDefault(), text, fontSize, 1.0f);
+    Vector2 textPosition = {(screenWidth - textSize.x) / 2, (screenHeight - textSize.y) / 2};
+
+    DrawTextEx(GetFontDefault(), text, textPosition, fontSize, 1.0f, BLACK);
 }

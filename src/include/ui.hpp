@@ -16,6 +16,7 @@ class UI {
         void deinit();
         void drawTiles();
         void drawLCD();
+        void drawPaused();
         bool isPaused();
         void initGameText();
         void initTilesText();
