@@ -23,8 +23,9 @@ class UI {
     private:
         Emu* m_emu;
         bool m_showTiles;
-        bool m_paused = false;
-        // bool m_isGameTextInitialized = false;
+        bool m_paused;
+        bool m_keepAspectRatio;
+
         Image m_gameImg;
         Texture2D m_gameText;
         Image m_tilesImg;

@@ -5,7 +5,9 @@ UI::UI(Emu* emu) {
 }
 
 void UI::init(int screenWidth, int screenHeight) {
-    // InitWindow(screenWidth, screenHeight, "GBRay");
+    m_paused = false;
+    m_keepAspectRatio = true;
+
     SetConfigFlags(FLAG_WINDOW_RESIZABLE);
     InitWindow(screenWidth, screenHeight, "GBRay");
     initGameText();
@@ -37,6 +39,10 @@ void UI::input() {
 
     if(IsKeyPressed(KEY_P)) {
         m_paused = !m_paused;
+    } 
+
+    if(IsKeyPressed(KEY_A)) {
+        m_keepAspectRatio = !m_keepAspectRatio;
     } 
 }
 
@@ -71,21 +77,29 @@ void UI::drawTiles() {
     int currentWidth = GetScreenWidth();
     int currentHeight = GetScreenHeight();
 
-    float scaleX = (float)currentWidth / (TILE_HIZ*8);
-    float scaleY = (float)currentHeight / (TILE_VER*8);
-    float scale = scaleX < scaleY ? scaleX : scaleY;
+    if(m_keepAspectRatio) {
 
-    int offset_x = (currentWidth - scale*TILE_HIZ*8) / 2;
-    int offset_y = (currentHeight - scale*TILE_VER*8) / 2;
+        float scaleX = (float)currentWidth / (TILE_HIZ*8);
+        float scaleY = (float)currentHeight / (TILE_VER*8);
+        float scale = scaleX < scaleY ? scaleX : scaleY;
 
-    Rectangle srcRec = {0.0f, 0.0f, (float)TILE_HIZ*8, (float)TILE_VER*8};
-    Rectangle desRec = {offset_x, offset_y, (float)(TILE_HIZ*8 * scale), (float)(TILE_VER*8 * scale)};
-    Vector2 org = {0.0f, 0.0f};
+        int offset_x = (currentWidth - scale*TILE_HIZ*8) / 2;
+        int offset_y = (currentHeight - scale*TILE_VER*8) / 2;
 
-    ClearBackground(BLACK);
-    DrawTexturePro(m_tilesText, srcRec, desRec, org, 0, RAYWHITE);
+        Rectangle srcRec = {0.0f, 0.0f, (float)TILE_HIZ*8, (float)TILE_VER*8};
+        Rectangle desRec = {offset_x, offset_y, (float)(TILE_HIZ*8 * scale), (float)(TILE_VER*8 * scale)};
+        Vector2 org = {0.0f, 0.0f};
 
-    
+        ClearBackground(BLACK);
+        DrawTexturePro(m_tilesText, srcRec, desRec, org, 0, RAYWHITE);
+    } else {
+        Rectangle srcRec = {0.0f, 0.0f, (float)TILE_HIZ*8, (float)TILE_VER*8};
+        Rectangle desRec = {0.0f, 0.0f, currentWidth, currentHeight};
+        Vector2 org = {0.0f, 0.0f};
+
+        ClearBackground(BLACK);
+        DrawTexturePro(m_tilesText, srcRec, desRec, org, 0, RAYWHITE);
+    }
 }
 
 bool UI::isPaused() {
@@ -114,20 +128,27 @@ void UI::drawLCD() {
 
     int currentWidth = GetScreenWidth();
     int currentHeight = GetScreenHeight();
-    
 
-    float scaleX = (float)currentWidth / WIDTH_SIZE;
-    float scaleY = (float)currentHeight / HEIGHT_SIZE;
-    float scale = scaleX < scaleY ? scaleX : scaleY;
+    if(m_keepAspectRatio) {
+        float scaleX = (float)currentWidth / WIDTH_SIZE;
+        float scaleY = (float)currentHeight / HEIGHT_SIZE;
+        float scale = scaleX < scaleY ? scaleX : scaleY;
 
-    int offset_x = (currentWidth - scale*WIDTH_SIZE) / 2;
-    int offset_y = (currentHeight - scale*HEIGHT_SIZE) / 2;
+        int offset_x = (currentWidth - scale*WIDTH_SIZE) / 2;
+        int offset_y = (currentHeight - scale*HEIGHT_SIZE) / 2;
 
-    // Draw the texture
-    Rectangle srcRec = {0.0f, 0.0f, (float)WIDTH_SIZE, (float)HEIGHT_SIZE};
-    Rectangle desRec = {offset_x, offset_y, (float)(WIDTH_SIZE * scale), (float)(HEIGHT_SIZE * scale)};
-    Vector2 org = {0.0f, 0.0f};
+        Rectangle srcRec = {0.0f, 0.0f, (float)WIDTH_SIZE, (float)HEIGHT_SIZE};
+        Rectangle desRec = {offset_x, offset_y, (float)(WIDTH_SIZE * scale), (float)(HEIGHT_SIZE * scale)};
+        Vector2 org = {0.0f, 0.0f};
 
-    ClearBackground(BLACK);
-    DrawTexturePro(m_gameText, srcRec, desRec, org, 0, RAYWHITE);
+        ClearBackground(BLACK);
+        DrawTexturePro(m_gameText, srcRec, desRec, org, 0, RAYWHITE);
+    } else {
+        Rectangle srcRec = {0.0f, 0.0f, (float)WIDTH_SIZE, (float)HEIGHT_SIZE};
+        Rectangle desRec = {0.0f, 0.0f, currentWidth, currentHeight};
+        Vector2 org = {0.0f, 0.0f};
+
+        ClearBackground(BLACK);
+        DrawTexturePro(m_gameText, srcRec, desRec, org, 0, RAYWHITE);
+    }
 }
