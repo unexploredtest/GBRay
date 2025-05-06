@@ -6,32 +6,26 @@ UI::UI(Emu* emu) {
 
 void UI::init(int screenWidth, int screenHeight) {
     // InitWindow(screenWidth, screenHeight, "GBRay");
-    InitWindow(TILE_HIZ*8*SCALE, TILE_VER*8*SCALE, "GBRay");
+    SetConfigFlags(FLAG_WINDOW_RESIZABLE);
+    InitWindow(screenWidth, screenHeight, "GBRay");
+    initGameText();
+    initTilesText();
     SetTargetFPS(60);
 }
 
 void UI::run() {
-    m_showTiles = true;
+    m_showTiles = false;
     while (!WindowShouldClose()) {
         input();
-        
-        // if(m_paused) {
-        //     ClearBackground(RAYWHITE);
-        //     continue;
-        // }
         BeginDrawing();
 
-
             if(m_showTiles){
-                SetWindowSize(TILE_HIZ*8*SCALE, TILE_VER*8*SCALE);
                 drawTiles();
             } else {
-                SetWindowSize(WIDTH_SIZE*SCALE, HEIGHT_SIZE*SCALE);
                 ClearBackground(RAYWHITE);
                 drawLCD();
             }
             
-
         EndDrawing();
     }
 }
@@ -66,31 +60,74 @@ void UI::drawTiles() {
                     int colorIndex = (highBit << 1) | lowBit;
 
                     Color color = COLORS[colorIndex];
-                    Rectangle pixelRec = {static_cast<float>((x*8+(7 - pixel))*SCALE), static_cast<float>((y*8+line)*SCALE), SCALE, SCALE};
-                    DrawRectangleRec(pixelRec, color);
+                    ImageDrawPixel(&m_tilesImg, static_cast<float>(x*8+(7 - pixel)), static_cast<float>(y*8+line), color);
                 }
             }
         }
     }
+
+    UpdateTexture(m_tilesText, m_tilesImg.data);
+
+    int currentWidth = GetScreenWidth();
+    int currentHeight = GetScreenHeight();
+
+    float scaleX = (float)currentWidth / (TILE_HIZ*8);
+    float scaleY = (float)currentHeight / (TILE_VER*8);
+    float scale = scaleX < scaleY ? scaleX : scaleY;
+
+    int offset_x = (currentWidth - scale*TILE_HIZ*8) / 2;
+    int offset_y = (currentHeight - scale*TILE_VER*8) / 2;
+
+    Rectangle srcRec = {0.0f, 0.0f, (float)TILE_HIZ*8, (float)TILE_VER*8};
+    Rectangle desRec = {offset_x, offset_y, (float)(TILE_HIZ*8 * scale), (float)(TILE_VER*8 * scale)};
+    Vector2 org = {0.0f, 0.0f};
+
+    ClearBackground(BLACK);
+    DrawTexturePro(m_tilesText, srcRec, desRec, org, 0, RAYWHITE);
+
+    
 }
 
 bool UI::isPaused() {
     return m_paused;
 }
 
+void UI::initGameText() {
+    m_gameImg = GenImageColor(WIDTH_SIZE, HEIGHT_SIZE, RAYWHITE);
+    m_gameText = LoadTextureFromImage(m_gameImg);
+}
+
+void UI::initTilesText() {
+    m_tilesImg = GenImageColor(TILE_HIZ*8, TILE_VER*8, RAYWHITE);
+    m_tilesText = LoadTextureFromImage(m_tilesImg);
+}
+
 void UI::drawLCD() {
     u8* video = m_emu->getPpu()->getVideo();
-    Image gameVid = GenImageColor(WIDTH_SIZE, HEIGHT_SIZE, RAYWHITE);
     for(int y = 0; y < HEIGHT_SIZE; y++) {
         for(int x = 0; x < WIDTH_SIZE; x++) {
-            ImageDrawPixel(&gameVid, x, y, COLORS[video[y*WIDTH_SIZE + x]]);
+            ImageDrawPixel(&m_gameImg, x, y, COLORS[video[y*WIDTH_SIZE + x]]);
         }
     }
-    Texture2D texture = LoadTextureFromImage(gameVid);
-    UnloadImage(gameVid);
-    // DrawTexture(texture, 0, 0, RAYWHITE);
-    Rectangle srcRec = {0.0f, 0.0f, WIDTH_SIZE, HEIGHT_SIZE};
-    Rectangle desRec = {0, 0, WIDTH_SIZE*SCALE, HEIGHT_SIZE*SCALE};
+        
+    UpdateTexture(m_gameText, m_gameImg.data);
+
+    int currentWidth = GetScreenWidth();
+    int currentHeight = GetScreenHeight();
+    
+
+    float scaleX = (float)currentWidth / WIDTH_SIZE;
+    float scaleY = (float)currentHeight / HEIGHT_SIZE;
+    float scale = scaleX < scaleY ? scaleX : scaleY;
+
+    int offset_x = (currentWidth - scale*WIDTH_SIZE) / 2;
+    int offset_y = (currentHeight - scale*HEIGHT_SIZE) / 2;
+
+    // Draw the texture
+    Rectangle srcRec = {0.0f, 0.0f, (float)WIDTH_SIZE, (float)HEIGHT_SIZE};
+    Rectangle desRec = {offset_x, offset_y, (float)(WIDTH_SIZE * scale), (float)(HEIGHT_SIZE * scale)};
     Vector2 org = {0.0f, 0.0f};
-    DrawTexturePro(texture, srcRec, desRec, org, 0, RAYWHITE);
+
+    ClearBackground(BLACK);
+    DrawTexturePro(m_gameText, srcRec, desRec, org, 0, RAYWHITE);
 }

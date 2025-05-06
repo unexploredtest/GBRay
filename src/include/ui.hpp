@@ -17,11 +17,19 @@ class UI {
         void drawTiles();
         void drawLCD();
         bool isPaused();
+        void initGameText();
+        void initTilesText();
     
     private:
         Emu* m_emu;
         bool m_showTiles;
         bool m_paused = false;
+        // bool m_isGameTextInitialized = false;
+        Image m_gameImg;
+        Texture2D m_gameText;
+        Image m_tilesImg;
+        Texture2D m_tilesText;
+
         static const int SCALE = 3;
         static const int TILE_HIZ = 24;
         static const int TILE_VER = 16;
