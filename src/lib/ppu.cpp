@@ -1,3 +1,6 @@
+#include <chrono>
+#include <thread>
+
 #include "ppu.hpp"
 
 
@@ -9,6 +12,8 @@ void Ppu::init() {
     m_currentLine = 0;
     m_currentTick = 0;
     m_currentMode = PM_OAM;
+    m_lockFrameRate = true;
+    m_lastFrameTime = std::chrono::system_clock::now();
 }
 
 u8 Ppu::readVRam(u16 address) {
@@ -52,6 +57,7 @@ void Ppu::runVBlank() {
         if(m_emu->getLcd()->getLy() == 0) {
             m_currentMode = PM_OAM;
             m_emu->getLcd()->sendInterrupt(SI_MD2);
+            checkFrameTime();
         }
     }
 }
@@ -92,6 +98,25 @@ void Ppu::tick() {
     m_emu->getLcd()->changePPUMode(m_currentMode);
 }
 
+void Ppu::checkFrameTime() {
+    const auto currentTime = std::chrono::system_clock::now();
+    const auto frameTime = std::chrono::microseconds(FRAME_TIME);
+
+    if(m_lockFrameRate && currentTime - m_lastFrameTime < frameTime) {
+        std::this_thread::sleep_for(frameTime - (currentTime - m_lastFrameTime));
+    }
+
+    m_lastFrameTime = std::chrono::system_clock::now();
+}
+
 u8* Ppu::getVideo() {
     return m_video;
+}
+
+bool Ppu::isFrameLocked() {
+    return m_lockFrameRate;
+}
+
+void Ppu::toggleFrameLock() {
+    m_lockFrameRate = !m_lockFrameRate;
 }

@@ -48,6 +48,10 @@ void UI::input() {
     if(IsKeyPressed(KEY_A)) {
         m_keepAspectRatio = !m_keepAspectRatio;
     } 
+
+    if(IsKeyPressed(KEY_F)) {
+        m_emu->getPpu()->toggleFrameLock();
+    } 
 }
 
 void UI::deinit() {

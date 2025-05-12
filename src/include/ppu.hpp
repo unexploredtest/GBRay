@@ -19,6 +19,9 @@ static const u8 OAM_TICKS = 80;
 static const u16 LINE_TCIKS = 456;
 static const u8 PPU_LINES = 144;
 
+// In microseconds
+static const u32 FRAME_TIME = 16740;
+
 static constexpr Color COLORS[] = {
     Color{0x9B, 0xBC, 0x0F, 0xFF},
     Color{0x8b, 0xac, 0x0f, 0xFF},
@@ -94,6 +97,9 @@ class Ppu {
         void runOAM();
         void runDRAW();
         void runPipeline();
+        void checkFrameTime();
+        bool isFrameLocked();
+        void toggleFrameLock();
         u8* getVideo();
 
     private:
@@ -106,6 +112,9 @@ class Ppu {
         u16 m_currentLine;
         u16 m_currentTick;
         PpuMode m_currentMode;
+
+        bool m_lockFrameRate;
+        std::chrono::time_point<std::chrono::system_clock> m_lastFrameTime;
 
         BGFetchData m_BGFetchData;
 
