@@ -104,7 +104,7 @@ struct Sprite {
     bool xFlip();
     u8 dmgPalette();
 
-    bool operator<(const Sprite& other);
+    bool operator<(const Sprite& other) const;
 };
 
 class SpriteBuffer {

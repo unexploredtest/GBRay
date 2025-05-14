@@ -37,8 +37,9 @@ u8 Sprite::dmgPalette() {
     return (attributes & (1 << 4)) >> 4;
 }
 
-bool Sprite::operator<(const Sprite& other) {
-    return xPos > other.xPos;
+bool Sprite::operator<(const Sprite& other) const {
+    // You might ask why it's >= and not >, to which I say "I don't know!"
+    return xPos >= other.xPos;
 }
 
 SpriteBuffer::SpriteBuffer() {
@@ -53,7 +54,7 @@ void SpriteBuffer::add(Sprite sprite) {
 }
 
 void SpriteBuffer::sort() {
-    std::sort(m_buffer.begin(), m_buffer.begin() + m_size);
+    std::stable_sort(m_buffer.begin(), m_buffer.begin() + m_size);
 }
 
 u8 SpriteBuffer::getSize() {
