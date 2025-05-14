@@ -76,7 +76,12 @@ void Lcd::incrementLy() {
     
 }
 
-u8 Lcd::getColorPallete(u8 objNumber, u8 index) {
+u8 Lcd::getBckColorPallete(u8 index) {
+    // TODO: Handle none 0/1 obj numbers I suppose
+    return (m_regs.bgp & (0b11 << (index * 2))) >> (index * 2);
+}
+
+u8 Lcd::getObjColorPallete(u8 objNumber, u8 index) {
     // TODO: Handle none 0/1 obj numbers I suppose
     u8 objPalette;
     if(objNumber == 0) {
