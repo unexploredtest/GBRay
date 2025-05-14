@@ -11,6 +11,7 @@ Emu::Emu() {
     m_ui = std::make_unique<UI>(this);
     m_dma = std::make_unique<Dma>(this);
     m_lcd = std::make_unique<Lcd>(this);
+    m_gamepad = std::make_unique<Gamepad>(this);
 }
 
 void Emu::run(std::string filePath) {
@@ -84,4 +85,8 @@ std::unique_ptr<Dma>& Emu::getDma() {
 
 std::unique_ptr<Lcd>& Emu::getLcd() {
     return m_lcd;
+}
+
+std::unique_ptr<Gamepad>& Emu::getGamepad() {
+    return m_gamepad;
 }

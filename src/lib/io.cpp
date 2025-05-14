@@ -1,5 +1,6 @@
 #include "io.hpp"
 #include "lcd.hpp"
+#include "gamepad.hpp"
 
 
 IO::IO(Emu* emu) {
@@ -8,6 +9,8 @@ IO::IO(Emu* emu) {
 
 u8 IO::read(u16 address) {
     switch(address) {
+        case 0x00:
+            return m_emu->getGamepad()->read();
         case 0x01:
         case 0x02:
             return m_serialData[address - 1];
@@ -39,6 +42,9 @@ u8 IO::read(u16 address) {
 
 void IO::write(u16 address, u8 value) {
     switch(address) {
+        case 0x00:
+            m_emu->getGamepad()->write(value);
+            break;
         case 0x01:
         case 0x02:
             m_serialData[address - 1] = value;

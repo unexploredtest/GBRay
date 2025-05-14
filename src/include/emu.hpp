@@ -13,6 +13,7 @@
 #include "ppu.hpp"
 #include "dma.hpp"
 #include "lcd.hpp"
+#include "gamepad.hpp"
 
 class Emu {
     public:
@@ -29,6 +30,7 @@ class Emu {
         std::unique_ptr<Ppu>& getPpu();
         std::unique_ptr<Dma>& getDma();
         std::unique_ptr<Lcd>& getLcd();
+        std::unique_ptr<Gamepad>& getGamepad();
         
     private:
         bool m_running;
@@ -46,4 +48,5 @@ class Emu {
         std::unique_ptr<UI> m_ui;
         std::unique_ptr<Dma> m_dma;
         std::unique_ptr<Lcd> m_lcd;
+        std::unique_ptr<Gamepad> m_gamepad;
 };

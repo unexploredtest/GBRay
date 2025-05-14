@@ -1,4 +1,5 @@
 #include "ui.hpp"
+#include "gamepad.hpp"
 
 UI::UI(Emu* emu) {
     m_emu = emu;
@@ -51,7 +52,71 @@ void UI::input() {
 
     if(IsKeyPressed(KEY_F)) {
         m_emu->getPpu()->toggleFrameLock();
-    } 
+    }
+
+    if(IsKeyPressed(KEY_Z)) {
+        m_emu->getGamepad()->changeButton(BT_A, true);
+    }
+
+    if(IsKeyReleased(KEY_Z)) {
+        m_emu->getGamepad()->changeButton(BT_A, false);
+    }
+
+    if(IsKeyPressed(KEY_X)) {
+        m_emu->getGamepad()->changeButton(BT_B, true);
+    }
+
+    if(IsKeyReleased(KEY_X)) {
+        m_emu->getGamepad()->changeButton(BT_B, false);
+    }
+
+    if(IsKeyPressed(KEY_ENTER)) {
+        m_emu->getGamepad()->changeButton(BT_START, true);
+    }
+
+    if(IsKeyReleased(KEY_ENTER)) {
+        m_emu->getGamepad()->changeButton(BT_START, false);
+    }
+
+    if(IsKeyPressed(KEY_BACKSPACE)) {
+        m_emu->getGamepad()->changeButton(BT_SELECT, true);
+    }
+
+    if(IsKeyReleased(KEY_BACKSPACE)) {
+        m_emu->getGamepad()->changeButton(BT_SELECT, false);
+    }
+
+    if(IsKeyPressed(KEY_UP)) {
+        m_emu->getGamepad()->changeButton(BT_UP, true);
+    }
+
+    if(IsKeyReleased(KEY_UP)) {
+        m_emu->getGamepad()->changeButton(BT_UP, false);
+    }
+
+    if(IsKeyPressed(KEY_DOWN)) {
+        m_emu->getGamepad()->changeButton(BT_DOWN, true);
+    }
+
+    if(IsKeyReleased(KEY_DOWN)) {
+        m_emu->getGamepad()->changeButton(BT_DOWN, false);
+    }
+
+    if(IsKeyPressed(KEY_RIGHT)) {
+        m_emu->getGamepad()->changeButton(BT_RIGHT, true);
+    }
+
+    if(IsKeyReleased(KEY_RIGHT)) {
+        m_emu->getGamepad()->changeButton(BT_RIGHT, false);
+    }
+
+    if(IsKeyPressed(KEY_LEFT)) {
+        m_emu->getGamepad()->changeButton(BT_LEFT, true);
+    }
+
+    if(IsKeyReleased(KEY_LEFT)) {
+        m_emu->getGamepad()->changeButton(BT_LEFT, false);
+    }
 }
 
 void UI::deinit() {

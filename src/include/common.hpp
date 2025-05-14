@@ -28,3 +28,4 @@ class UI;
 class Ppu;
 class Dma;
 class Lcd;
+class Gamepad;
