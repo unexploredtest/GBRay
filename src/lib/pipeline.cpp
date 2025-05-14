@@ -79,6 +79,67 @@ void Ppu::BGFetch() {
     m_BGFetchData.shouldFetch = false;
 }
 
+Pixel Ppu::checkSprite(Pixel pixel, u8 pixelIndex) {
+    u8 scx = m_emu->getLcd()->getRegs().scx;
+    u8 scy = m_emu->getLcd()->getRegs().scy;
+    u8 ly = m_emu->getLcd()->getRegs().ly;
+
+    u8 currentX = (m_BGFetchData.xPos) - (pixelIndex + 1);
+    for(int i = 0; i < m_spriteBuffer.getSize(); i++) {
+        auto sprite = m_spriteBuffer.getArray()[i];
+        u8 spriteX = sprite.xPos - 8;
+        if(!(spriteX <= currentX && currentX < spriteX + 8)) {
+            continue;
+        }
+
+        if(sprite.hasPriority()) {
+            continue;
+        }
+
+        u8 xOffset = 7 - (currentX - spriteX);
+
+        if(sprite.xFlip()) {
+            xOffset = 7 - xOffset;
+        }
+
+        u8 yOffset = ly - (sprite.yPos - 16);
+
+        if(sprite.yFlip()) {
+            if(m_emu->getLcd()->getObjectSize() == 8) {
+                yOffset = 7 - yOffset;
+            } else {
+                yOffset = 15 - yOffset;
+            }
+        }
+
+        // if(m_emu->getLcd()->getObjectSize() == 16) {
+        //     multiply = 32;
+        // }
+        u8 index = sprite.index;
+        if(m_emu->getLcd()->getObjectSize() == 16) {
+            index = index - (index & 0b1);
+        }
+
+
+
+        u8 lowByte = m_emu->getBus()->read(FIRST_TILE_OFFSET + index * 16 + 2 * yOffset);
+        u8 highByte = m_emu->getBus()->read(FIRST_TILE_OFFSET + 1 + index * 16 + 2 * yOffset);
+
+        u8 lowBit = (lowByte & (1 << xOffset)) >> xOffset;
+        u8 highBit = (highByte & (1 << xOffset)) >> xOffset;
+        int colorIndex = (highBit << 1) | lowBit;
+        
+        if(colorIndex == 0) {
+            continue;
+        }
+
+        pixel.colorIndex = m_emu->getLcd()->getColorPallete(sprite.dmgPalette(), colorIndex);
+        // break;
+    }
+
+    return pixel;
+}
+
 bool Ppu::BGPush() {
     if(m_BGFetchData.fifo.getSize() > 8) {
         return false;
@@ -94,8 +155,18 @@ bool Ppu::BGPush() {
         int colorIndex = (highBit << 1) | lowBit;
         
         pixel.colorIndex = colorIndex;
+
+        if(!m_emu->getLcd()->isBGWindowEnabled()) {
+            pixel.colorIndex = 0;
+        }
+
+        if(m_emu->getLcd()->isObjectEnabled()) {
+            pixel = checkSprite(pixel, pixelIndex);
+        }
+        
         m_BGFetchData.fifo.push(pixel);
     }
+
     return true;
 }
 

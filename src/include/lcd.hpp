@@ -47,6 +47,7 @@ class Lcd {
         u8 getLy();
         void changePPUMode(u8 mode);
         LcdRegs getRegs();
+        u8 getColorPallete(u8 objNumber, u8 index);
 
     private:
         Emu* m_emu;

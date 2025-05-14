@@ -1,11 +1,75 @@
 #include <chrono>
 #include <thread>
+#include <algorithm>
 
 #include "ppu.hpp"
 
 
 Ppu::Ppu(Emu* emu) {
     m_emu = emu;
+}
+
+// Sprite::Sprite(u8 data[4]) {
+//     yPos = data[0];
+//     xPos = data[1];
+//     index = data[2];
+
+//     attributes = data[3];
+//     // hasPriority = (attributes & (1 << 7)) >> 7;
+//     // yFlip = (attributes & (1 << 6)) >> 6; 
+//     // xFlip = (attributes & (1 << 5)) >> 5; 
+//     // dmgPalette = (attributes & (1 << 4)) >> 4; 
+// }
+
+bool Sprite::hasPriority() {
+    return (attributes & (1 << 7)) >> 7;
+}
+
+bool Sprite::yFlip() {
+    return (attributes & (1 << 6)) >> 6;
+}
+
+bool Sprite::xFlip() {
+    return (attributes & (1 << 5)) >> 5;
+}
+
+u8 Sprite::dmgPalette() {
+    return (attributes & (1 << 4)) >> 4;
+}
+
+bool Sprite::operator<(const Sprite& other) {
+    return xPos > other.xPos;
+}
+
+SpriteBuffer::SpriteBuffer() {
+    m_size = 0;
+}
+
+void SpriteBuffer::add(Sprite sprite) {
+    if(m_size < BUFFER_SIZE) {
+        m_buffer[m_size] = sprite;
+        m_size++;
+    }
+}
+
+void SpriteBuffer::sort() {
+    std::sort(m_buffer.begin(), m_buffer.begin() + m_size);
+}
+
+u8 SpriteBuffer::getSize() {
+    return m_size;
+}
+
+Sprite SpriteBuffer::getLast() {
+    return m_buffer[m_size - 1];
+}
+
+void SpriteBuffer::removeLast() {
+    m_size--;
+}
+
+std::array<Sprite, SpriteBuffer::BUFFER_SIZE>& SpriteBuffer::getArray() {
+    return m_buffer;
 }
 
 void Ppu::init() {
@@ -63,6 +127,21 @@ void Ppu::runVBlank() {
 }
 
 void Ppu::runOAM() {
+    if(m_currentTick == 1) {
+        m_spriteBuffer = SpriteBuffer{};
+        Sprite* spriteArray = (Sprite*)m_oam;
+        u8 ly = m_emu->getLcd()->getLy();
+        for(int i = 0; i < 40; i++) {
+            u8 tileSize = m_emu->getLcd()->getObjectSize();
+            if(spriteArray[i].xPos > 0 && spriteArray[i].yPos <= ly + 16 &&
+                spriteArray[i].yPos + tileSize > ly + 16) {
+                m_spriteBuffer.add(spriteArray[i]);
+            }
+        }
+
+        m_spriteBuffer.sort();
+    }
+
     if(m_currentTick >= OAM_TICKS) {
         m_currentMode = PM_DRAW;
         m_BGFetchData = BGFetchData{};

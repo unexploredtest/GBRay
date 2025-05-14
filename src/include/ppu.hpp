@@ -82,6 +82,47 @@ struct BGFetchData {
     u8 tileHigh;
 };
 
+struct OBFetchData {
+    FetchMode currentFetchMode;
+    Fifo fifo;
+    bool shouldFetch = false;
+    u8 xPos;
+    u8 xPushPos;
+    u8 tileIndex;
+    u8 tileLow;
+    u8 tileHigh;
+};
+
+struct Sprite {
+    u8 yPos;
+    u8 xPos;
+    u8 index;
+    u8 attributes;
+
+    bool hasPriority();
+    bool yFlip();
+    bool xFlip();
+    u8 dmgPalette();
+
+    bool operator<(const Sprite& other);
+};
+
+class SpriteBuffer {
+    private:
+        static const u8 BUFFER_SIZE = 10;
+        std::array<Sprite, BUFFER_SIZE> m_buffer;
+        u8 m_size;      
+
+    public:
+        SpriteBuffer();
+        void add(Sprite sprite);
+        Sprite getLast();
+        void removeLast();
+        void sort();
+        u8 getSize();
+        std::array<Sprite, BUFFER_SIZE>& getArray();
+};
+
 
 class Ppu {
     public:
@@ -117,13 +158,17 @@ class Ppu {
         std::chrono::time_point<std::chrono::system_clock> m_lastFrameTime;
 
         BGFetchData m_BGFetchData;
+        OBFetchData m_OBFetchData;
+
 
         // bool m_shouldFetch = false;
         // FetchMode m_currentFetchMode;
+
+        SpriteBuffer m_spriteBuffer;
 
         // Pipeline methods
         void BGFetch();
         void BGDraw();
         bool BGPush();
-
+        Pixel checkSprite(Pixel pixel, u8 pixelIndex);
 };

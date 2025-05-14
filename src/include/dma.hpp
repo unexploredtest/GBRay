@@ -15,6 +15,4 @@ class Dma {
         bool m_isTrans;
         u8 m_curTick;
         u8 m_curHighByte;
-
-    
 };

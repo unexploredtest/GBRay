@@ -76,6 +76,18 @@ void Lcd::incrementLy() {
     
 }
 
+u8 Lcd::getColorPallete(u8 objNumber, u8 index) {
+    // TODO: Handle none 0/1 obj numbers I suppose
+    u8 objPalette;
+    if(objNumber == 0) {
+        objPalette = m_regs.obp0;
+    } else {
+        objPalette = m_regs.obp1;
+    }
+
+    return (objPalette & (0b11 << (index * 2))) >> (index * 2);
+}
+
 u8 Lcd::read(u16 address) {
     switch (address) {
         case 0x0:
