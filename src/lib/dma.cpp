@@ -6,7 +6,7 @@ Dma::Dma(Emu* emu) {
 }
 
 void Dma::start(u8 highByte) {
-    if(!m_isTrans) {
+    if(m_isTrans) {
         return;
     } 
 
@@ -24,9 +24,10 @@ void Dma::tick() {
     const u16 baseDst = 0xFE00;
     if(m_curTick >= 160) {
         for(int lowerAdr = 0; lowerAdr < 0xA0; lowerAdr++) {
-            u8 value = m_emu->getBus()->read(baseSrc + baseDst);
+            u8 value = m_emu->getBus()->read(baseSrc + lowerAdr);
             m_emu->getBus()->write(baseDst + lowerAdr, value);
         }
+    
         m_isTrans = false;
     } else {
         m_curTick++;
