@@ -80,11 +80,10 @@ void Ppu::BGFetch() {
 }
 
 Pixel Ppu::checkSprite(Pixel pixel, u8 pixelIndex) {
-    u8 scx = m_emu->getLcd()->getRegs().scx;
-    u8 scy = m_emu->getLcd()->getRegs().scy;
     u8 ly = m_emu->getLcd()->getRegs().ly;
-
+    Pixel backPixel = pixel;
     u8 currentX = (m_BGFetchData.xPos) - (pixelIndex + 1);
+    
     for(int i = 0; i < m_spriteBuffer.getSize(); i++) {
         auto sprite = m_spriteBuffer.getArray()[i];
         u8 spriteX = sprite.xPos - 8;
@@ -92,7 +91,7 @@ Pixel Ppu::checkSprite(Pixel pixel, u8 pixelIndex) {
             continue;
         }
 
-        if(sprite.hasPriority()) {
+        if(sprite.hasPriority() && backPixel.colorIndex != 0) {
             continue;
         }
 
@@ -120,8 +119,6 @@ Pixel Ppu::checkSprite(Pixel pixel, u8 pixelIndex) {
             index = index - (index & 0b1);
         }
 
-
-
         u8 lowByte = m_emu->getBus()->read(FIRST_TILE_OFFSET + index * 16 + 2 * yOffset);
         u8 highByte = m_emu->getBus()->read(FIRST_TILE_OFFSET + 1 + index * 16 + 2 * yOffset);
 
@@ -134,7 +131,6 @@ Pixel Ppu::checkSprite(Pixel pixel, u8 pixelIndex) {
         }
 
         pixel.colorIndex = m_emu->getLcd()->getColorPallete(sprite.dmgPalette(), colorIndex);
-        // break;
     }
 
     return pixel;
