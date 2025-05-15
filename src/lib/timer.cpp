@@ -55,7 +55,6 @@ void Timer::write(TimerRegsType regType, u8 value) {
 }
 
 u8 Timer::read(TimerRegsType regType) {
-    return 0;
     switch(regType) {
         case TT_DIV:
             return m_regs.div >> 8;
