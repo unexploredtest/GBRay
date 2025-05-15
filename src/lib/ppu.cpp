@@ -3,6 +3,7 @@
 #include <algorithm>
 
 #include "ppu.hpp"
+#include "emu.hpp"
 
 
 Ppu::Ppu(Emu* emu) {
@@ -99,8 +100,8 @@ void Ppu::writeOAM(u16 address, u8 value) {
 }
 
 void Ppu::incrementWinLine() {
-    u8 wy = m_emu->getLcd()->getRegs().wy;
-    u8 ly = m_emu->getLcd()->getLy();
+    u8 wy = m_emu->getLcd().getRegs().wy;
+    u8 ly = m_emu->getLcd().getLy();
 
     if(ly >= wy && ly < wy + HEIGHT_SIZE && isWindowEnabled()) {
         m_winLine++;
@@ -109,18 +110,18 @@ void Ppu::incrementWinLine() {
 
 void Ppu::runHBlank() {
     if(m_currentTick >= LINE_TCIKS) {
-        m_emu->getLcd()->incrementLy();
+        m_emu->getLcd().incrementLy();
         incrementWinLine();
         
         m_currentTick = 0;
 
-        if(m_emu->getLcd()->getLy() >= PPU_LINES) {
+        if(m_emu->getLcd().getLy() >= PPU_LINES) {
             m_currentMode = PM_VBLANK;
-            m_emu->getCpu()->requestInterrupt(IT_VBLANK);
-            m_emu->getLcd()->sendInterrupt(SI_MD1);
+            m_emu->getCpu().requestInterrupt(IT_VBLANK);
+            m_emu->getLcd().sendInterrupt(SI_MD1);
         } else {
             m_currentMode = PM_OAM;
-            m_emu->getLcd()->sendInterrupt(SI_MD2);
+            m_emu->getLcd().sendInterrupt(SI_MD2);
         }
     }
 }
@@ -128,12 +129,12 @@ void Ppu::runHBlank() {
 void Ppu::runVBlank() {
     if(m_currentTick >= LINE_TCIKS) {
         m_currentTick = 0;
-        m_emu->getLcd()->incrementLy();
+        m_emu->getLcd().incrementLy();
 
-        if(m_emu->getLcd()->getLy() == 0) {
+        if(m_emu->getLcd().getLy() == 0) {
             m_currentMode = PM_OAM;
             m_winLine = 0;
-            m_emu->getLcd()->sendInterrupt(SI_MD2);
+            m_emu->getLcd().sendInterrupt(SI_MD2);
             checkFrameTime();
         }
     }
@@ -143,9 +144,9 @@ void Ppu::runOAM() {
     if(m_currentTick == 1) {
         m_spriteBuffer = SpriteBuffer{};
         Sprite* spriteArray = (Sprite*)m_oam;
-        u8 ly = m_emu->getLcd()->getLy();
+        u8 ly = m_emu->getLcd().getLy();
         for(int i = 0; i < 40; i++) {
-            u8 tileSize = m_emu->getLcd()->getObjectSize();
+            u8 tileSize = m_emu->getLcd().getObjectSize();
             if(spriteArray[i].xPos > 0 && spriteArray[i].yPos <= ly + 16 &&
                 spriteArray[i].yPos + tileSize > ly + 16) {
                 m_spriteBuffer.add(spriteArray[i]);
@@ -171,7 +172,7 @@ void Ppu::runDRAW() {
     if(m_BGFetchData.xPushPos >= 160) {
         m_BGFetchData.fifo.reset();
         m_currentMode = PM_HBLANK;
-        m_emu->getLcd()->sendInterrupt(SI_MD0);
+        m_emu->getLcd().sendInterrupt(SI_MD0);
     }
 }
 
@@ -188,7 +189,7 @@ void Ppu::tick() {
     } else if(m_currentMode == PM_VBLANK) {
         runVBlank();
     }
-    m_emu->getLcd()->changePPUMode(m_currentMode);
+    m_emu->getLcd().changePPUMode(m_currentMode);
 }
 
 void Ppu::checkFrameTime() {

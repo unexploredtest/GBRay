@@ -1,5 +1,6 @@
 #include "ui.hpp"
 #include "gamepad.hpp"
+#include "emu.hpp"
 
 UI::UI(Emu* emu) {
     m_emu = emu;
@@ -53,71 +54,71 @@ void UI::input() {
     } 
 
     if(IsKeyPressed(KEY_F)) {
-        m_emu->getPpu()->toggleFrameLock();
+        m_emu->getPpu().toggleFrameLock();
     }
 
     if(IsKeyPressed(KEY_Z)) {
-        m_emu->getGamepad()->changeButton(BT_A, true);
+        m_emu->getGamepad().changeButton(BT_A, true);
     }
 
     if(IsKeyReleased(KEY_Z)) {
-        m_emu->getGamepad()->changeButton(BT_A, false);
+        m_emu->getGamepad().changeButton(BT_A, false);
     }
 
     if(IsKeyPressed(KEY_X)) {
-        m_emu->getGamepad()->changeButton(BT_B, true);
+        m_emu->getGamepad().changeButton(BT_B, true);
     }
 
     if(IsKeyReleased(KEY_X)) {
-        m_emu->getGamepad()->changeButton(BT_B, false);
+        m_emu->getGamepad().changeButton(BT_B, false);
     }
 
     if(IsKeyPressed(KEY_ENTER)) {
-        m_emu->getGamepad()->changeButton(BT_START, true);
+        m_emu->getGamepad().changeButton(BT_START, true);
     }
 
     if(IsKeyReleased(KEY_ENTER)) {
-        m_emu->getGamepad()->changeButton(BT_START, false);
+        m_emu->getGamepad().changeButton(BT_START, false);
     }
 
     if(IsKeyPressed(KEY_BACKSPACE)) {
-        m_emu->getGamepad()->changeButton(BT_SELECT, true);
+        m_emu->getGamepad().changeButton(BT_SELECT, true);
     }
 
     if(IsKeyReleased(KEY_BACKSPACE)) {
-        m_emu->getGamepad()->changeButton(BT_SELECT, false);
+        m_emu->getGamepad().changeButton(BT_SELECT, false);
     }
 
     if(IsKeyPressed(KEY_UP)) {
-        m_emu->getGamepad()->changeButton(BT_UP, true);
+        m_emu->getGamepad().changeButton(BT_UP, true);
     }
 
     if(IsKeyReleased(KEY_UP)) {
-        m_emu->getGamepad()->changeButton(BT_UP, false);
+        m_emu->getGamepad().changeButton(BT_UP, false);
     }
 
     if(IsKeyPressed(KEY_DOWN)) {
-        m_emu->getGamepad()->changeButton(BT_DOWN, true);
+        m_emu->getGamepad().changeButton(BT_DOWN, true);
     }
 
     if(IsKeyReleased(KEY_DOWN)) {
-        m_emu->getGamepad()->changeButton(BT_DOWN, false);
+        m_emu->getGamepad().changeButton(BT_DOWN, false);
     }
 
     if(IsKeyPressed(KEY_RIGHT)) {
-        m_emu->getGamepad()->changeButton(BT_RIGHT, true);
+        m_emu->getGamepad().changeButton(BT_RIGHT, true);
     }
 
     if(IsKeyReleased(KEY_RIGHT)) {
-        m_emu->getGamepad()->changeButton(BT_RIGHT, false);
+        m_emu->getGamepad().changeButton(BT_RIGHT, false);
     }
 
     if(IsKeyPressed(KEY_LEFT)) {
-        m_emu->getGamepad()->changeButton(BT_LEFT, true);
+        m_emu->getGamepad().changeButton(BT_LEFT, true);
     }
 
     if(IsKeyReleased(KEY_LEFT)) {
-        m_emu->getGamepad()->changeButton(BT_LEFT, false);
+        m_emu->getGamepad().changeButton(BT_LEFT, false);
     }
 }
 
@@ -132,8 +133,8 @@ void UI::drawTiles() {
         for(int x = 0; x < TILE_HIZ; x++) {
             int tileIndex = y*TILE_HIZ + x;
             for(int line = 0; line < 8; line++) {
-                u8 lowByte = m_emu->getBus()->read(baseIndex + 16*tileIndex + 2*line);
-                u8 highByte = m_emu->getBus()->read(baseIndex + 16*tileIndex + 2*line + 1);
+                u8 lowByte = m_emu->getBus().read(baseIndex + 16*tileIndex + 2*line);
+                u8 highByte = m_emu->getBus().read(baseIndex + 16*tileIndex + 2*line + 1);
 
                 for(int pixel = 7; pixel >= 0; pixel--) {
                     u8 lowBit = (lowByte & (1 << pixel)) >> pixel;
@@ -192,7 +193,7 @@ void UI::initTilesText() {
 }
 
 void UI::drawLCD() {
-    u8* video = m_emu->getPpu()->getVideo();
+    u8* video = m_emu->getPpu().getVideo();
     for(int y = 0; y < HEIGHT_SIZE; y++) {
         for(int x = 0; x < WIDTH_SIZE; x++) {
             ImageDrawPixel(&m_gameImg, x, y, COLORS[video[y*WIDTH_SIZE + x]]);
@@ -245,7 +246,7 @@ void UI::displaySpeed() {
     const int screenWidth = GetScreenWidth();
     const int screenHeight = GetScreenHeight();
 
-    float speedRatio = m_emu->getPpu()->getSpeedRatio();
+    float speedRatio = m_emu->getPpu().getSpeedRatio();
 
     char text[20];
     snprintf(text, sizeof(text), "%.2f", speedRatio);

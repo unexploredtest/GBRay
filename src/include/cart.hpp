@@ -1,7 +1,6 @@
 #pragma once
 
 #include "common.hpp"
-#include "emu.hpp"
 
 
 struct CartHeader {
@@ -24,7 +23,7 @@ struct CartHeader {
 
 class Cart {
     public:
-        Cart();
+        Cart() {};
         Cart(Emu* emu);
         void loadROM(std::string& filePath);
         void printROMInfo();

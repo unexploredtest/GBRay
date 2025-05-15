@@ -1,4 +1,5 @@
 #include "cpu.hpp"
+#include "emu.hpp"
 
 static const std::array<Instruction, 0x100> INSTRUCTIONS = [] {
     std::array<Instruction, 0x100> temp = {};
@@ -297,7 +298,7 @@ void Cpu::init() {
 void Cpu::step() {
     if(!m_halted) {
         // printCPUInfo();
-        u8 opcode = m_emu->getBus()->read(m_regs.PC);
+        u8 opcode = m_emu->getBus().read(m_regs.PC);
         m_regs.PC++;
         cycle(1);
         try {
@@ -334,10 +335,10 @@ void Cpu::cycle(int ticks) {
     for(int i = 0; i < ticks; i++) {
         for(int j = 0; j < 4; j++) {
             m_ticks++;
-            m_emu->getTimer()->tick();
-            m_emu->getPpu()->tick();
+            m_emu->getTimer().tick();
+            m_emu->getPpu().tick();
         }
-        m_emu->getDma()->tick();
+        m_emu->getDma().tick();
     }
 }
 
@@ -750,7 +751,7 @@ void Cpu::cb() {
         case CB_RLC: {
             u16 value = readReg(reg);
             if(reg == R_HL) {
-                value = m_emu->getBus()->read(value);
+                value = m_emu->getBus().read(value);
             }
 
             clearFlag(F_Z);
@@ -770,7 +771,7 @@ void Cpu::cb() {
             }
 
             if(reg == R_HL) {
-                m_emu->getBus()->write(readReg(reg), value);
+                m_emu->getBus().write(readReg(reg), value);
             } else {
                 writeReg(reg, value);
             }
@@ -780,7 +781,7 @@ void Cpu::cb() {
         case CB_RRC: {
             u16 value = readReg(reg);
             if(reg == R_HL) {
-                value = m_emu->getBus()->read(value);
+                value = m_emu->getBus().read(value);
             }
 
             clearFlag(F_Z);
@@ -800,7 +801,7 @@ void Cpu::cb() {
             }
 
             if(reg == R_HL) {
-                m_emu->getBus()->write(readReg(reg), value);
+                m_emu->getBus().write(readReg(reg), value);
             } else {
                 writeReg(reg, value);
             }
@@ -810,7 +811,7 @@ void Cpu::cb() {
         case CB_RL: {
             u16 value = readReg(reg);
             if(reg == R_HL) {
-                value = m_emu->getBus()->read(value);
+                value = m_emu->getBus().read(value);
             }
 
             u8 carry = getFlag(F_C);
@@ -830,7 +831,7 @@ void Cpu::cb() {
             }
 
             if(reg == R_HL) {
-                m_emu->getBus()->write(readReg(reg), value);
+                m_emu->getBus().write(readReg(reg), value);
             } else {
                 writeReg(reg, value);
             }
@@ -840,7 +841,7 @@ void Cpu::cb() {
         case CB_RR: {
             u16 value = readReg(reg);
             if(reg == R_HL) {
-                value = m_emu->getBus()->read(value);
+                value = m_emu->getBus().read(value);
             }
 
             u8 carry = getFlag(F_C);
@@ -860,7 +861,7 @@ void Cpu::cb() {
             }
 
             if(reg == R_HL) {
-                m_emu->getBus()->write(readReg(reg), value);
+                m_emu->getBus().write(readReg(reg), value);
             } else {
                 writeReg(reg, value);
             }
@@ -870,7 +871,7 @@ void Cpu::cb() {
         case CB_SLA: {
             u16 value = readReg(reg);
             if(reg == R_HL) {
-                value = m_emu->getBus()->read(value);
+                value = m_emu->getBus().read(value);
             }
 
             clearFlag(F_Z);
@@ -888,7 +889,7 @@ void Cpu::cb() {
             }
 
             if(reg == R_HL) {
-                m_emu->getBus()->write(readReg(reg), value);
+                m_emu->getBus().write(readReg(reg), value);
             } else {
                 writeReg(reg, value);
             }
@@ -898,7 +899,7 @@ void Cpu::cb() {
         case CB_SRA: {
             u16 value = readReg(reg);
             if(reg == R_HL) {
-                value = m_emu->getBus()->read(value);
+                value = m_emu->getBus().read(value);
             }
 
             clearFlag(F_Z);
@@ -917,7 +918,7 @@ void Cpu::cb() {
             }
 
             if(reg == R_HL) {
-                m_emu->getBus()->write(readReg(reg), value);
+                m_emu->getBus().write(readReg(reg), value);
             } else {
                 writeReg(reg, value);
             }
@@ -927,7 +928,7 @@ void Cpu::cb() {
         case CB_SWAP: {
             u16 value = readReg(reg);
             if(reg == R_HL) {
-                value = m_emu->getBus()->read(value);
+                value = m_emu->getBus().read(value);
             }
 
             clearFlag(F_Z);
@@ -941,7 +942,7 @@ void Cpu::cb() {
             }
 
             if(reg == R_HL) {
-                m_emu->getBus()->write(readReg(reg), value);
+                m_emu->getBus().write(readReg(reg), value);
             } else {
                 writeReg(reg, value);
             }
@@ -951,7 +952,7 @@ void Cpu::cb() {
         case CB_SRL: {
             u16 value = readReg(reg);
             if(reg == R_HL) {
-                value = m_emu->getBus()->read(value);
+                value = m_emu->getBus().read(value);
             }
 
             clearFlag(F_Z);
@@ -969,7 +970,7 @@ void Cpu::cb() {
             }
 
             if(reg == R_HL) {
-                m_emu->getBus()->write(readReg(reg), value);
+                m_emu->getBus().write(readReg(reg), value);
             } else {
                 writeReg(reg, value);
             }
@@ -979,7 +980,7 @@ void Cpu::cb() {
         case CB_BIT: {
             u16 value = readReg(reg);
             if(reg == R_HL) {
-                value = m_emu->getBus()->read(value);
+                value = m_emu->getBus().read(value);
             }
 
             setFlag(F_Z);
@@ -995,13 +996,13 @@ void Cpu::cb() {
         case CB_RES: {
             u16 value = readReg(reg);
             if(reg == R_HL) {
-                value = m_emu->getBus()->read(value);
+                value = m_emu->getBus().read(value);
             }
 
             value = value & (0xFF - (1 << bitOp));
 
             if(reg == R_HL) {
-                m_emu->getBus()->write(readReg(reg), value);
+                m_emu->getBus().write(readReg(reg), value);
             } else {
                 writeReg(reg, value);
             }
@@ -1011,13 +1012,13 @@ void Cpu::cb() {
         case CB_SET: {
             u16 value = readReg(reg);
             if(reg == R_HL) {
-                value = m_emu->getBus()->read(value);
+                value = m_emu->getBus().read(value);
             }
 
             value = value | (1 << bitOp);
 
             if(reg == R_HL) {
-                m_emu->getBus()->write(readReg(reg), value);
+                m_emu->getBus().write(readReg(reg), value);
             } else {
                 writeReg(reg, value);
             }
@@ -1176,7 +1177,7 @@ void Cpu::ld() {
         // Because this is a unique addressing mode (2 regs and e8) we just
         // read the value here instead of complicating the code and creating
         // another addressing mode just for this
-        u8 value = m_emu->getBus()->read(m_regs.PC);
+        u8 value = m_emu->getBus().read(m_regs.PC);
         m_regs.PC++;
         cycle(1);
 
@@ -1197,8 +1198,8 @@ void Cpu::ld() {
     } else if(m_curInst.reg1 == R_SP && m_curInst.addrMode == AM_MN16_R) {
         // We require special handling here, can't just use the method putData
         u16 address = m_curInstData.param1;
-        m_emu->getBus()->write(address, m_curInstData.param2 & 0xFF);
-        m_emu->getBus()->write(address + 1, m_curInstData.param2 >> 8);
+        m_emu->getBus().write(address, m_curInstData.param2 & 0xFF);
+        m_emu->getBus().write(address + 1, m_curInstData.param2 >> 8);
 
     } else {
         putData(m_curInstData.param2);
@@ -1248,11 +1249,11 @@ void Cpu::fetchData() {
             m_curInstData = InstructionData{readReg(m_curInst.reg1), 0};
             break;
         case AM_MR:
-            m_curInstData = InstructionData{m_emu->getBus()->read(readReg(m_curInst.reg1)), 0};
+            m_curInstData = InstructionData{m_emu->getBus().read(readReg(m_curInst.reg1)), 0};
             break;
         case AM_MR_N8:
         case AM_R_N8: {
-            u16 result = m_emu->getBus()->read(m_regs.PC);
+            u16 result = m_emu->getBus().read(m_regs.PC);
             m_regs.PC++;
             cycle(1);
 
@@ -1260,11 +1261,11 @@ void Cpu::fetchData() {
             break;
         }
         case AM_R_N16: {
-            u16 low = m_emu->getBus()->read(m_regs.PC);
+            u16 low = m_emu->getBus().read(m_regs.PC);
             m_regs.PC++;
             cycle(1);
 
-            u16 high = m_emu->getBus()->read(m_regs.PC);
+            u16 high = m_emu->getBus().read(m_regs.PC);
             m_regs.PC++;
             cycle(1);
 
@@ -1283,32 +1284,32 @@ void Cpu::fetchData() {
         case AM_R_MR:
             if(m_curInst.reg2 == R_C) {
                 m_curInstData = InstructionData{readReg(m_curInst.reg1),
-                    m_emu->getBus()->read(readReg(m_curInst.reg2) + 0xFF00)};
+                    m_emu->getBus().read(readReg(m_curInst.reg2) + 0xFF00)};
             } else {
                 m_curInstData = InstructionData{readReg(m_curInst.reg1),
-                    m_emu->getBus()->read(readReg(m_curInst.reg2))};
+                    m_emu->getBus().read(readReg(m_curInst.reg2))};
             }
             
             break;
         case AM_R_MN16: {
-            u16 low = m_emu->getBus()->read(m_regs.PC);
+            u16 low = m_emu->getBus().read(m_regs.PC);
             m_regs.PC++;
             cycle(1);
 
-            u16 high = m_emu->getBus()->read(m_regs.PC);
+            u16 high = m_emu->getBus().read(m_regs.PC);
             m_regs.PC++;
             cycle(1);
 
             u16 result = (high << 8) + low;
-            m_curInstData = InstructionData{0, m_emu->getBus()->read(result)};
+            m_curInstData = InstructionData{0, m_emu->getBus().read(result)};
             break;
         }
         case AM_MN16_R: {
-            u16 low = m_emu->getBus()->read(m_regs.PC);
+            u16 low = m_emu->getBus().read(m_regs.PC);
             m_regs.PC++;
             cycle(1);
 
-            u16 high = m_emu->getBus()->read(m_regs.PC);
+            u16 high = m_emu->getBus().read(m_regs.PC);
             m_regs.PC++;
             cycle(1);
 
@@ -1317,15 +1318,15 @@ void Cpu::fetchData() {
             break;
         }
         case AM_R_MN8: {
-            u16 result = m_emu->getBus()->read(m_regs.PC) + 0xFF00;
+            u16 result = m_emu->getBus().read(m_regs.PC) + 0xFF00;
             m_regs.PC++;
             cycle(1);
 
-            m_curInstData = InstructionData{0, m_emu->getBus()->read(result)};
+            m_curInstData = InstructionData{0, m_emu->getBus().read(result)};
             break;
         }
         case AM_MN8_R: {
-            u16 result = m_emu->getBus()->read(m_regs.PC) + 0xFF00;
+            u16 result = m_emu->getBus().read(m_regs.PC) + 0xFF00;
             m_regs.PC++;
             cycle(1);
 
@@ -1368,7 +1369,7 @@ void Cpu::putData(u16 data) {
             writeReg(m_curInst.reg1, data);
             break;
         case AM_MR:
-            m_emu->getBus()->write(readReg(m_curInst.reg1), data);
+            m_emu->getBus().write(readReg(m_curInst.reg1), data);
             break;
         case AM_R_N8:
             writeReg(m_curInst.reg1, data);
@@ -1385,14 +1386,14 @@ void Cpu::putData(u16 data) {
         case AM_MR_R:
             // writeReg(m_curInst.reg1, data);
             if(m_curInst.reg1 == R_C) {
-                m_emu->getBus()->write(readReg(m_curInst.reg1) + 0xFF00, data);
+                m_emu->getBus().write(readReg(m_curInst.reg1) + 0xFF00, data);
             } else {
-                m_emu->getBus()->write(readReg(m_curInst.reg1), data);
+                m_emu->getBus().write(readReg(m_curInst.reg1), data);
             }
             break;
         case AM_HLI_R:
             // writeReg(m_curInst.reg1, data);
-            m_emu->getBus()->write(readReg(m_curInst.reg1), data);
+            m_emu->getBus().write(readReg(m_curInst.reg1), data);
             writeReg(R_HL, readReg(R_HL) + 1);
             break;
         case AM_R_HLI:
@@ -1401,7 +1402,7 @@ void Cpu::putData(u16 data) {
             break;
         case AM_HLD_R:
             // writeReg(m_curInst.reg1, data);
-            m_emu->getBus()->write(readReg(m_curInst.reg1), data);
+            m_emu->getBus().write(readReg(m_curInst.reg1), data);
             writeReg(R_HL, readReg(R_HL) - 1);
             break;
         case AM_R_HLD:
@@ -1409,11 +1410,11 @@ void Cpu::putData(u16 data) {
             writeReg(R_HL, readReg(R_HL) - 1);
             break;
         case AM_MR_N8:
-            m_emu->getBus()->write(readReg(m_curInst.reg1), data);
+            m_emu->getBus().write(readReg(m_curInst.reg1), data);
             break;
         case AM_MN8_R:
         case AM_MN16_R:
-            m_emu->getBus()->write(m_curInstData.param1, data);
+            m_emu->getBus().write(m_curInstData.param1, data);
             break;
         default:
             throw std::runtime_error("ERROR: No such addressing mode");
@@ -1423,9 +1424,9 @@ void Cpu::putData(u16 data) {
 void Cpu::printCPUInfo() {
     std::cout << "Tick " << std::hex << (int)m_ticks << ":" << std::endl;
     std::cout << "PC: 0x" << std::hex << (int)m_regs.PC;
-    std::cout << " (" << std::hex << (int)m_emu->getBus()->read(m_regs.PC );
-    std::cout << " " << std::hex << (int)m_emu->getBus()->read(m_regs.PC + 1);
-    std::cout << " " << std::hex << (int)m_emu->getBus()->read(m_regs.PC + 2);
+    std::cout << " (" << std::hex << (int)m_emu->getBus().read(m_regs.PC );
+    std::cout << " " << std::hex << (int)m_emu->getBus().read(m_regs.PC + 1);
+    std::cout << " " << std::hex << (int)m_emu->getBus().read(m_regs.PC + 2);
     std::cout << ")";
     std::cout << " SP: 0x" << std::hex << (int)m_regs.SP;
     std::cout << " A: 0x" << std::hex << (int)m_regs.A;
@@ -1651,11 +1652,11 @@ void Cpu::writeIntFlags(u8 data) {
 
 void Cpu::pushStack(u8 data) {
     m_regs.SP--;
-    m_emu->getBus()->write(m_regs.SP, data);
+    m_emu->getBus().write(m_regs.SP, data);
 }
 
 u8 Cpu::popStack() {
-    u8 data = m_emu->getBus()->read(m_regs.SP);
+    u8 data = m_emu->getBus().read(m_regs.SP);
     m_regs.SP++;
     return data;
 }
@@ -1744,12 +1745,12 @@ void Cpu::handleInterrupts() {
 }
 
 void Cpu::dbgUpate() {
-    if(m_emu->getBus()->read(0xFF02) == 0x81) {
+    if(m_emu->getBus().read(0xFF02) == 0x81) {
         
-        char msg = m_emu->getBus()->read(0xFF01);
+        char msg = m_emu->getBus().read(0xFF01);
         m_dbgMessage[m_msgSize] = msg;
         m_msgSize++;
-        m_emu->getBus()->write(0xFF02, 0);
+        m_emu->getBus().write(0xFF02, 0);
     }
 }
 

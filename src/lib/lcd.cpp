@@ -1,4 +1,5 @@
 #include "lcd.hpp"
+#include "emu.hpp"
 
 Lcd::Lcd(Emu* emu) {
     m_emu = emu;
@@ -50,7 +51,7 @@ bool Lcd::isBGWindowEnabled() {
 
 void Lcd::sendInterrupt(StatInt interrupt) {
     if(m_regs.stat & interrupt) {
-        m_emu->getCpu()->requestInterrupt(IT_LCD_STAT);
+        m_emu->getCpu().requestInterrupt(IT_LCD_STAT);
     }
 }
 

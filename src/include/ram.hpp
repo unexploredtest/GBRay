@@ -1,12 +1,11 @@
 #pragma once
 
 #include "common.hpp"
-#include "emu.hpp"
 
 
 class Ram {
     public:
-        Ram();
+        Ram() {};
         Ram(Emu* emu);
 
         u8 readWRam(u16 address);

@@ -1,7 +1,6 @@
 #pragma once
 
 #include "common.hpp"
-#include "emu.hpp"
 
 struct Buttons
 {
@@ -28,7 +27,7 @@ enum Button {
 
 class Gamepad {
     public:
-        Gamepad();
+        Gamepad() {};
         Gamepad(Emu* emu);
 
         void write(u8 value);

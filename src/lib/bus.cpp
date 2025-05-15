@@ -2,6 +2,7 @@
 #include "ram.hpp"
 #include "cart.hpp"
 #include "cpu.hpp"
+#include "emu.hpp"
 
 Bus::Bus(Emu* emu) {
     m_emu = emu;
@@ -9,27 +10,27 @@ Bus::Bus(Emu* emu) {
 
 u8 Bus::read(u16 address) {
     if(address < 0x8000) { // Cartridge ROM
-        return m_emu->getCart()->read(address);
+        return m_emu->getCart().read(address);
     } else if(address < 0xA000) { // VRAM
-        return m_emu->getPpu()->readVRam(address - 0x8000);
+        return m_emu->getPpu().readVRam(address - 0x8000);
     } else if(address < 0xC000) { // External RAM, from cartridge
-        return m_emu->getCart()->read(address);
+        return m_emu->getCart().read(address);
     } else if(address < 0xE000) { // WRAM
-        return m_emu->getRam()->readWRam(address - 0xC000);
+        return m_emu->getRam().readWRam(address - 0xC000);
     } else if(address < 0xFE00) { // Echo RAM
         std::cout << "WARNING: Bus read address 0x" << std::hex <<
             (int)address << " is prohibited!" << std::endl;
     } else if(address < 0xFEA0) { // Object attribute memory
-        return m_emu->getPpu()->readOAM(address - 0xFE00);
+        return m_emu->getPpu().readOAM(address - 0xFE00);
     } else if(address < 0xFF00) { // Not Usable
         std::cout << "WARNING: Bus read address 0x" << std::hex <<
             (int)address << " not supported!" << std::endl;
     } else if(address < 0xFF80) { // I/O Registers
-        return m_emu->getIO()->read(address - 0xFF00);
+        return m_emu->getIO().read(address - 0xFF00);
     } else if(address < 0xFFFF) { // HRAM
-        return m_emu->getRam()->readHRam(address - 0xFF80); 
+        return m_emu->getRam().readHRam(address - 0xFF80); 
     } else if(address == 0xFFFF) { // IE Register
-        return m_emu->getCpu()->readIERegister();
+        return m_emu->getCpu().readIERegister();
     }
 
     return 0; // For unsupported bus reads
@@ -37,27 +38,27 @@ u8 Bus::read(u16 address) {
 
 void Bus::write(u16 address, u8 value) {
     if(address < 0x8000) {
-        m_emu->getCart()->write(address, value);
+        m_emu->getCart().write(address, value);
     } else if(address < 0xA000) { // VRAM
-        m_emu->getPpu()->writeVRam(address - 0x8000, value);
+        m_emu->getPpu().writeVRam(address - 0x8000, value);
     } else if(address < 0xC000) { // External RAM, from cartridge
-        m_emu->getCart()->write(address, value);
+        m_emu->getCart().write(address, value);
     } else if(address < 0xE000) { // WRAM
-        m_emu->getRam()->writeWRam(address - 0xC000, value);
+        m_emu->getRam().writeWRam(address - 0xC000, value);
     } else if(address < 0xFE00) { // Echo RAM
         std::cout << "WARNING: Bus write saddress 0x" << std::hex <<
             (int)address << " is prohibited!" << std::endl;
     } else if(address < 0xFEA0) { // Object attribute memory
-        m_emu->getPpu()->writeOAM(address - 0xFE00, value);
+        m_emu->getPpu().writeOAM(address - 0xFE00, value);
     } else if(address < 0xFF00) { // Not Usable
         std::cout << "WARNING: Bus write saddress 0x" << std::hex <<
             (int)address << " not supported!" << std::endl;
     } else if(address < 0xFF80) { // I/O Registers
-        m_emu->getIO()->write(address - 0xFF00, value);
+        m_emu->getIO().write(address - 0xFF00, value);
     } else if(address < 0xFFFF) { // HRAM
-        m_emu->getRam()->writeHRam(address - 0xFF80, value); 
+        m_emu->getRam().writeHRam(address - 0xFF80, value); 
     } else if(address == 0xFFFF) { // IE Register
-        m_emu->getCpu()->writeIERegister(value);
+        m_emu->getCpu().writeIERegister(value);
     }
 }
 

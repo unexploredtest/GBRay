@@ -1,7 +1,8 @@
 #pragma once
 
+#include <chrono>
+
 #include "common.hpp"
-#include "emu.hpp"
 
 
 static const u16 FIRST_TILE_OFFSET = 0x8000;
@@ -123,6 +124,7 @@ class SpriteBuffer {
 
 class Ppu {
     public:
+        Ppu() {};
         Ppu(Emu* emu);
         void init();
         void tick();

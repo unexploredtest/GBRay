@@ -1,7 +1,6 @@
 #pragma once
 
 #include "common.hpp"
-#include "emu.hpp"
 
 struct TimerRegs {
     u16 div;
@@ -16,7 +15,7 @@ enum TimerRegsType {
 
 class Timer {
     public:
-        Timer();
+        Timer() {};
         Timer(Emu* emu);
         void tick();
         void write(TimerRegsType regType, u8 value);

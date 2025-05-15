@@ -20,17 +20,17 @@ class Emu {
         Emu();
         void run(std::string filePath);
         void runCpu();
-        std::unique_ptr<Cart>& getCart(); 
-        std::unique_ptr<Bus>& getBus();
-        std::unique_ptr<Ram>& getRam();
-        std::unique_ptr<Cpu>& getCpu();
-        std::unique_ptr<IO>& getIO();
-        std::unique_ptr<Timer>& getTimer();
-        std::unique_ptr<UI>& getUI();
-        std::unique_ptr<Ppu>& getPpu();
-        std::unique_ptr<Dma>& getDma();
-        std::unique_ptr<Lcd>& getLcd();
-        std::unique_ptr<Gamepad>& getGamepad();
+        Cart& getCart(); 
+        Bus& getBus();
+        Ram& getRam();
+        Cpu& getCpu();
+        IO& getIO();
+        Timer& getTimer();
+        UI& getUI();
+        Ppu& getPpu();
+        Dma& getDma();
+        Lcd& getLcd();
+        Gamepad& getGamepad();
         
     private:
         bool m_running;
@@ -38,15 +38,15 @@ class Emu {
         bool m_die;
         u32 m_ticks;
 
-        std::unique_ptr<Cart> m_cart;
-        std::unique_ptr<Bus> m_bus;
-        std::unique_ptr<Cpu> m_cpu;
-        std::unique_ptr<Ppu> m_ppu;
-        std::unique_ptr<Ram> m_ram;
-        std::unique_ptr<IO> m_io;
-        std::unique_ptr<Timer> m_timer;
-        std::unique_ptr<UI> m_ui;
-        std::unique_ptr<Dma> m_dma;
-        std::unique_ptr<Lcd> m_lcd;
-        std::unique_ptr<Gamepad> m_gamepad;
+        Cart m_cart;
+        Bus m_bus;
+        Cpu m_cpu;
+        Ppu m_ppu;
+        Ram m_ram;
+        IO m_io;
+        Timer m_timer;
+        UI m_ui;
+        Dma m_dma;
+        Lcd m_lcd;
+        Gamepad m_gamepad;
 };

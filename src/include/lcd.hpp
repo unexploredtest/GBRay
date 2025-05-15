@@ -1,7 +1,6 @@
 #pragma once
 
 #include "common.hpp"
-#include "emu.hpp"
 
 static const u8 MAX_LINES = 154;
 
@@ -28,6 +27,7 @@ enum StatInt {
 
 class Lcd {
     public:
+        Lcd() {};
         Lcd(Emu* emu);
         void init();
         u8 read(u16 address);

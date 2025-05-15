@@ -1,10 +1,10 @@
 #pragma once
 
 #include "common.hpp"
-#include "emu.hpp"
 
 class Dma {
     public:
+        Dma() {};
         Dma(Emu* emu);
         void start(u8 highByte);
         void tick();

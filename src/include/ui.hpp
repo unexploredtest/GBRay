@@ -1,14 +1,13 @@
 #pragma once
 
 #include "common.hpp"
-#include "emu.hpp"
 
 // static const u8 WIDTH_SIZE = 160;
 // static const u8 HEIGHT_SIZE = 144;
 
 class UI {
     public:
-        UI();
+        UI() {};
         UI(Emu* emu);
         void init(int screenWidth, int screenHeight);
         void input();

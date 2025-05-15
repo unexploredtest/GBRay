@@ -1,4 +1,5 @@
 #include "timer.hpp"
+#include "emu.hpp"
 
 Timer::Timer(Emu* emu) {
     m_emu = emu;
@@ -30,7 +31,7 @@ void Timer::tick() {
         if(m_regs.tima == 0xFF) {
             m_regs.tima = m_regs.tma;
 
-            m_emu->getCpu()->requestInterrupt(IT_TIMER);
+            m_emu->getCpu().requestInterrupt(IT_TIMER);
         }
     }
 }

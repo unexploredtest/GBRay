@@ -1,7 +1,6 @@
 #pragma once
 
 #include "common.hpp"
-#include "emu.hpp"
 #include "miscellaneous.hpp"
 
 
@@ -161,7 +160,7 @@ enum InterruptType {
 
 class Cpu {
     public:
-        Cpu();
+        Cpu() {};
         Cpu(Emu* emu);
         void init();
         void step();
