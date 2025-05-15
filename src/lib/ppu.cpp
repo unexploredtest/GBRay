@@ -208,7 +208,7 @@ void Ppu::checkFrameTime() {
     m_lastFrameTime = newLastFrameTime;
 }
 
-std::array<u8, WIDTH_SIZE*HEIGHT_SIZE>& Ppu::getVideo() {
+std::array<u8, Ppu::VIDEO_SIZE>& Ppu::getVideo() {
     return m_video;
 }
 

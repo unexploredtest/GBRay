@@ -143,15 +143,18 @@ class Ppu {
         void toggleFrameLock();
         void changeFrameSpeed(float speed);
         float getSpeedRatio();
-        std::array<u8, WIDTH_SIZE*HEIGHT_SIZE>& getVideo();
+        
+        static const u32 VIDEO_SIZE = WIDTH_SIZE*HEIGHT_SIZE;
+        std::array<u8, VIDEO_SIZE>& getVideo();
 
     private:
         Emu* m_emu;
         static const u16 VRAM_SIZE = 0x2000;
         static const u16 OAM_SIZE = 0xA0;
+        
         std::array<u8, VRAM_SIZE> m_vRam;
         std::array<u8, OAM_SIZE> m_oam;
-        std::array<u8, WIDTH_SIZE*HEIGHT_SIZE> m_video;
+        std::array<u8, VIDEO_SIZE> m_video;
         u16 m_currentLine;
         u16 m_currentTick;
         PpuMode m_currentMode;
