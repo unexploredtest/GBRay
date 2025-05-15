@@ -193,7 +193,7 @@ void UI::initTilesText() {
 }
 
 void UI::drawLCD() {
-    u8* video = m_emu->getPpu().getVideo();
+    auto video = m_emu->getPpu().getVideo();
     for(int y = 0; y < HEIGHT_SIZE; y++) {
         for(int x = 0; x < WIDTH_SIZE; x++) {
             ImageDrawPixel(&m_gameImg, x, y, COLORS[video[y*WIDTH_SIZE + x]]);

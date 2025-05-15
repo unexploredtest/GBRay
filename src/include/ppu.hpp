@@ -1,6 +1,7 @@
 #pragma once
 
 #include <chrono>
+#include <array>
 
 #include "common.hpp"
 
@@ -142,7 +143,7 @@ class Ppu {
         void toggleFrameLock();
         void changeFrameSpeed(float speed);
         float getSpeedRatio();
-        u8* getVideo();
+        std::array<u8, WIDTH_SIZE*HEIGHT_SIZE>& getVideo();
 
     private:
         Emu* m_emu;
@@ -150,7 +151,7 @@ class Ppu {
         static const u16 OAM_SIZE = 0xA0;
         u8 m_vRam[VRAM_SIZE];
         u8 m_oam[OAM_SIZE];
-        u8 m_video[WIDTH_SIZE*HEIGHT_SIZE];
+        std::array<u8, WIDTH_SIZE*HEIGHT_SIZE> m_video;
         u16 m_currentLine;
         u16 m_currentTick;
         PpuMode m_currentMode;
