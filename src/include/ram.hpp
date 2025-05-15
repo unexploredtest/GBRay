@@ -17,6 +17,6 @@ class Ram {
         Emu* m_emu;
         static const u16 WRAM_SIZE = 0x2000;
         static const u16 HRAM_SIZE = 0x80;
-        u8 m_wRam[WRAM_SIZE];
-        u8 m_hRam[HRAM_SIZE];
+        std::array<u8, WRAM_SIZE> m_wRam;
+        std::array<u8, HRAM_SIZE> m_hRam;
 };

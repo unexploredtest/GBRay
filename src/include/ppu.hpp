@@ -149,8 +149,8 @@ class Ppu {
         Emu* m_emu;
         static const u16 VRAM_SIZE = 0x2000;
         static const u16 OAM_SIZE = 0xA0;
-        u8 m_vRam[VRAM_SIZE];
-        u8 m_oam[OAM_SIZE];
+        std::array<u8, VRAM_SIZE> m_vRam;
+        std::array<u8, OAM_SIZE> m_oam;
         std::array<u8, WIDTH_SIZE*HEIGHT_SIZE> m_video;
         u16 m_currentLine;
         u16 m_currentTick;

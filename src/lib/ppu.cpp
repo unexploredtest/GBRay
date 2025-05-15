@@ -143,7 +143,7 @@ void Ppu::runVBlank() {
 void Ppu::runOAM() {
     if(m_currentTick == 1) {
         m_spriteBuffer = SpriteBuffer{};
-        Sprite* spriteArray = (Sprite*)m_oam;
+        Sprite* spriteArray = (Sprite*)m_oam.data();
         u8 ly = m_emu->getLcd().getLy();
         for(int i = 0; i < 40; i++) {
             u8 tileSize = m_emu->getLcd().getObjectSize();
