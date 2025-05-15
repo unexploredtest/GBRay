@@ -20,6 +20,7 @@ class UI {
         bool isPaused();
         void initGameText();
         void initTilesText();
+        void displaySpeed();
     
     private:
         Emu* m_emu;

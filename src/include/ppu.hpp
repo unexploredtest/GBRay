@@ -138,6 +138,8 @@ class Ppu {
         void checkFrameTime();
         bool isFrameLocked();
         void toggleFrameLock();
+        void changeFrameSpeed(float speed);
+        float getSpeedRatio();
         u8* getVideo();
 
     private:
@@ -151,7 +153,9 @@ class Ppu {
         u16 m_currentTick;
         PpuMode m_currentMode;
 
+        float m_renderSpeed = 1.0f;
         bool m_lockFrameRate;
+        float m_speedRatio;
         std::chrono::time_point<std::chrono::system_clock> m_lastFrameTime;
 
         BGFetchData m_BGFetchData;

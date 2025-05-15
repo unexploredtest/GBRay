@@ -29,6 +29,8 @@ void UI::run() {
                 drawLCD();
             }
 
+            displaySpeed();
+
             if(m_paused) {
                 drawPaused();
             }
@@ -237,4 +239,18 @@ void UI::drawPaused() {
     Vector2 textPosition = {(screenWidth - textSize.x) / 2, (screenHeight - textSize.y) / 2};
 
     DrawTextEx(GetFontDefault(), text, textPosition, fontSize, 1.0f, BLACK);
+}
+
+void UI::displaySpeed() {
+    const int screenWidth = GetScreenWidth();
+    const int screenHeight = GetScreenHeight();
+
+    float speedRatio = m_emu->getPpu()->getSpeedRatio();
+
+    char text[20];
+    snprintf(text, sizeof(text), "%.2f", speedRatio);
+    int marginX = screenWidth * 0.02;
+    int marginY = screenHeight * 0.02;
+    
+    DrawText(text, marginX, marginY, 20, RED);
 }

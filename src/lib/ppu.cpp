@@ -193,13 +193,18 @@ void Ppu::tick() {
 
 void Ppu::checkFrameTime() {
     const auto currentTime = std::chrono::system_clock::now();
-    const auto frameTime = std::chrono::microseconds(FRAME_TIME);
+    const u32 amplifiedTime = FRAME_TIME / m_renderSpeed;
+    const auto frameTime = std::chrono::microseconds(amplifiedTime);
 
     if(m_lockFrameRate && currentTime - m_lastFrameTime < frameTime) {
         std::this_thread::sleep_for(frameTime - (currentTime - m_lastFrameTime));
     }
 
-    m_lastFrameTime = std::chrono::system_clock::now();
+    auto newLastFrameTime = std::chrono::system_clock::now();
+    auto timeDifference = newLastFrameTime - m_lastFrameTime;
+    m_speedRatio = (float)(FRAME_TIME * 1000) / timeDifference.count();
+
+    m_lastFrameTime = newLastFrameTime;
 }
 
 u8* Ppu::getVideo() {
@@ -212,4 +217,12 @@ bool Ppu::isFrameLocked() {
 
 void Ppu::toggleFrameLock() {
     m_lockFrameRate = !m_lockFrameRate;
+}
+
+void Ppu::changeFrameSpeed(float speed) {
+    m_renderSpeed = speed;
+}
+
+float Ppu::getSpeedRatio() {
+    return m_speedRatio;
 }
