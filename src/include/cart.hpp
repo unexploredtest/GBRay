@@ -23,7 +23,7 @@ struct CartHeader {
 
 class Cart {
     public:
-        Cart() {};
+        Cart() = default;
         Cart(Emu* emu);
         void loadROM(std::string& filePath);
         void printROMInfo();

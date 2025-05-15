@@ -160,7 +160,7 @@ enum InterruptType {
 
 class Cpu {
     public:
-        Cpu() {};
+        Cpu() = default;
         Cpu(Emu* emu);
         void init();
         void step();

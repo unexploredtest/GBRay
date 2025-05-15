@@ -5,7 +5,7 @@
 
 class Ram {
     public:
-        Ram() {};
+        Ram() = default;
         Ram(Emu* emu);
 
         u8 readWRam(u16 address);

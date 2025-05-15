@@ -15,7 +15,7 @@ enum TimerRegsType {
 
 class Timer {
     public:
-        Timer() {};
+        Timer() = default;
         Timer(Emu* emu);
         void tick();
         void write(TimerRegsType regType, u8 value);

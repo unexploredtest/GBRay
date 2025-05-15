@@ -27,7 +27,7 @@ enum StatInt {
 
 class Lcd {
     public:
-        Lcd() {};
+        Lcd() = default;
         Lcd(Emu* emu);
         void init();
         u8 read(u16 address);

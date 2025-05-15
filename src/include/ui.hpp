@@ -7,7 +7,7 @@
 
 class UI {
     public:
-        UI() {};
+        UI() = default;
         UI(Emu* emu);
         void init(int screenWidth, int screenHeight);
         void input();

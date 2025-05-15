@@ -125,7 +125,7 @@ class SpriteBuffer {
 
 class Ppu {
     public:
-        Ppu() {};
+        Ppu() = default;
         Ppu(Emu* emu);
         void init();
         void tick();
@@ -143,7 +143,7 @@ class Ppu {
         void toggleFrameLock();
         void changeFrameSpeed(float speed);
         float getSpeedRatio();
-        
+
         static const u32 VIDEO_SIZE = WIDTH_SIZE*HEIGHT_SIZE;
         std::array<u8, VIDEO_SIZE>& getVideo();
 

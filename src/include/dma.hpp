@@ -4,7 +4,7 @@
 
 class Dma {
     public:
-        Dma() {};
+        Dma() = default;
         Dma(Emu* emu);
         void start(u8 highByte);
         void tick();

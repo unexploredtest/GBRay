@@ -27,7 +27,7 @@ enum Button {
 
 class Gamepad {
     public:
-        Gamepad() {};
+        Gamepad() = default;
         Gamepad(Emu* emu);
 
         void write(u8 value);
