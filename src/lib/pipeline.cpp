@@ -1,5 +1,93 @@
 #include "ppu.hpp"
 
+bool Ppu::isWindowEnabled() {
+    u8 wx = m_emu->getLcd()->getRegs().wx;
+    u8 wy = m_emu->getLcd()->getRegs().wy;
+
+    if(m_emu->getLcd()->isWindowEnabled() &&
+        wx >= 0 && wx <= 166 && wy >= 0 && wy < HEIGHT_SIZE) {
+        return true;
+    } else {
+        return false;
+    }
+}
+
+void Ppu::WDFetch() {
+    if(!isWindowEnabled()) {
+        return;
+    }
+
+    u8 wx = m_emu->getLcd()->getRegs().wx;
+    u8 wy = m_emu->getLcd()->getRegs().wy;
+
+    u8 currentXPos;
+    if(m_BGFetchData.currentFetchMode == FM_TILE) {
+        currentXPos = m_BGFetchData.xPos;
+    } else {
+        currentXPos = m_BGFetchData.xPos - 8;
+    }
+    
+    if(m_winLine && m_emu->getLcd()->isWindowEnabled() &&
+        ((currentXPos + 7 >= wx && currentXPos < wx + 7 + WIDTH_SIZE))) {
+            
+        if(m_emu->getLcd()->getLy() >= m_emu->getLcd()->getRegs().wy &&
+        m_emu->getLcd()->getLy() < m_emu->getLcd()->getRegs().wy + HEIGHT_SIZE) {
+            
+        } else {
+            return;
+        }
+
+        m_winLine--;
+        
+        switch(m_BGFetchData.currentFetchMode) {
+            case FM_TILE: {
+                u16 offset;
+                if(m_emu->getLcd()->windowsTileMapMode() == 1) {
+                    offset = SECOND_MAP_OFFSET;
+                } else {
+                    offset = FIRST_MAP_OFFSET;
+                }
+                u8 index = m_emu->getBus()->read(offset + (((m_BGFetchData.xPos + 7 - wx) / 8)) + 32 * ((m_winLine) / 8));
+                m_WDFetchData.tileIndex = index;
+                m_WDFetchData.xPos += 8;
+            } break;
+        
+            case FM_LOWDATA: {
+                u8 lowByte;
+                if(m_emu->getLcd()->tileDataMode() == 1) {
+                    lowByte = m_emu->getBus()->read(FIRST_TILE_OFFSET + m_WDFetchData.tileIndex * 16 + 2 * ((m_winLine) % 8));
+                } else {
+                    if(m_WDFetchData.tileIndex <= 127) {
+                        lowByte = m_emu->getBus()->read(THIRD_TILE_OFFSET + m_WDFetchData.tileIndex * 16 + 2 * ((m_winLine) % 8));
+                    } else {
+                        lowByte = m_emu->getBus()->read(SECOND_TILE_OFFSET + (m_WDFetchData.tileIndex - 128) * 16 + 2 * ((m_winLine) % 8));
+                    }
+                }
+                m_BGFetchData.tileLow = lowByte;
+                
+            } break;
+            case FM_HIGHDATA: {
+                u8 scy = m_emu->getLcd()->getRegs().scy;
+                u8 ly = m_emu->getLcd()->getRegs().ly;
+                u8 highByte;
+                if(m_emu->getLcd()->tileDataMode() == 1) {
+                    highByte = m_emu->getBus()->read(FIRST_TILE_OFFSET + 1 + m_WDFetchData.tileIndex * 16 + 2 * ((m_winLine) % 8));
+                } else {
+                    if(m_WDFetchData.tileIndex <= 127) {
+                        highByte = m_emu->getBus()->read(THIRD_TILE_OFFSET + 1 + m_WDFetchData.tileIndex * 16 + 2 * ((m_winLine) % 8));
+                    } else {
+                        highByte = m_emu->getBus()->read(SECOND_TILE_OFFSET + 1 + (m_WDFetchData.tileIndex - 128) * 16 + 2 * ((m_winLine) % 8));
+                    }
+                }
+                m_BGFetchData.tileHigh = highByte;
+                
+            } break;
+        }
+        
+        m_winLine++;
+    }
+}
+
 void Ppu::BGFetch() {
     if(m_BGFetchData.currentFetchMode != FM_PUSH && !m_BGFetchData.shouldFetch) {
         m_BGFetchData.shouldFetch = true;
@@ -21,6 +109,7 @@ void Ppu::BGFetch() {
                 }
                 u8 index = m_emu->getBus()->read(offset + (((scx + m_BGFetchData.xPos) / 8) & 0x1F) + 32 * (((ly + scy) & 0xFF) / 8));
                 m_BGFetchData.tileIndex = index;
+                WDFetch();
             } else {
                 m_BGFetchData.tileIndex = 0;
             }
@@ -43,6 +132,7 @@ void Ppu::BGFetch() {
                 }
             }
             m_BGFetchData.tileLow = lowByte;
+            WDFetch();
             m_BGFetchData.currentFetchMode = FM_HIGHDATA;
             break;
         }
@@ -61,6 +151,7 @@ void Ppu::BGFetch() {
                 }
             }
             m_BGFetchData.tileHigh = highByte;
+            WDFetch();
             m_BGFetchData.currentFetchMode = FM_SLEEP;
             break;
         }
@@ -168,13 +259,16 @@ bool Ppu::BGPush() {
 }
 
 void Ppu::BGDraw() {
-    
     if(m_BGFetchData.fifo.getSize() > 8) {
+        u8 scx = m_emu->getLcd()->getRegs().scx;
         u8 scy = m_emu->getLcd()->getRegs().scy;
         u8 ly = m_emu->getLcd()->getRegs().ly;
         Pixel pixel = m_BGFetchData.fifo.pop();
-        m_video[m_BGFetchData.xPushPos + (ly)*WIDTH_SIZE] = pixel.colorIndex;
-        m_BGFetchData.xPushPos++;
+        if(m_BGFetchData.lineX >= scx % 8) {
+            m_video[m_BGFetchData.xPushPos + (ly)*WIDTH_SIZE] = pixel.colorIndex;
+            m_BGFetchData.xPushPos++;
+        }
+        m_BGFetchData.lineX++;
     }
 }
 

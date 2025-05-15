@@ -80,14 +80,11 @@ struct BGFetchData {
     u8 tileIndex;
     u8 tileLow;
     u8 tileHigh;
+    u8 lineX;
 };
 
-struct OBFetchData {
-    FetchMode currentFetchMode;
-    Fifo fifo;
-    bool shouldFetch = false;
+struct WDFetchData {
     u8 xPos;
-    u8 xPushPos;
     u8 tileIndex;
     u8 tileLow;
     u8 tileHigh;
@@ -158,16 +155,19 @@ class Ppu {
         std::chrono::time_point<std::chrono::system_clock> m_lastFrameTime;
 
         BGFetchData m_BGFetchData;
-        OBFetchData m_OBFetchData;
+        WDFetchData m_WDFetchData;
 
 
         // bool m_shouldFetch = false;
         // FetchMode m_currentFetchMode;
 
         SpriteBuffer m_spriteBuffer;
-
+        u8 m_winLine;
+        void incrementWinLine();
+        bool isWindowEnabled();
         // Pipeline methods
         void BGFetch();
+        void WDFetch();
         void BGDraw();
         bool BGPush();
         Pixel checkSprite(Pixel pixel, u8 pixelIndex);

@@ -79,6 +79,7 @@ void Ppu::init() {
     m_currentMode = PM_OAM;
     m_lockFrameRate = true;
     m_lastFrameTime = std::chrono::system_clock::now();
+    m_winLine = 0;
 }
 
 u8 Ppu::readVRam(u16 address) {
@@ -86,7 +87,6 @@ u8 Ppu::readVRam(u16 address) {
 }
 
 void Ppu::writeVRam(u16 address, u8 value) {
-    // std::cout << address << std::endl;
     m_vRam[address] = value;
 }
 
@@ -98,9 +98,20 @@ void Ppu::writeOAM(u16 address, u8 value) {
     m_oam[address] = value;
 }
 
+void Ppu::incrementWinLine() {
+    u8 wy = m_emu->getLcd()->getRegs().wy;
+    u8 ly = m_emu->getLcd()->getLy();
+
+    if(ly >= wy && ly < wy + HEIGHT_SIZE && isWindowEnabled()) {
+        m_winLine++;
+    }
+}
+
 void Ppu::runHBlank() {
     if(m_currentTick >= LINE_TCIKS) {
         m_emu->getLcd()->incrementLy();
+        incrementWinLine();
+        
         m_currentTick = 0;
 
         if(m_emu->getLcd()->getLy() >= PPU_LINES) {
@@ -121,6 +132,7 @@ void Ppu::runVBlank() {
 
         if(m_emu->getLcd()->getLy() == 0) {
             m_currentMode = PM_OAM;
+            m_winLine = 0;
             m_emu->getLcd()->sendInterrupt(SI_MD2);
             checkFrameTime();
         }
@@ -148,6 +160,7 @@ void Ppu::runOAM() {
         m_BGFetchData = BGFetchData{};
         m_BGFetchData.xPos = 0;
         m_BGFetchData.xPushPos = 0;
+        m_WDFetchData = WDFetchData{};
     }
 }
 
