@@ -2,20 +2,22 @@
 
 
 Fifo::Fifo() {
-    m_head = nullptr;
-    m_tail = nullptr;
+    m_headIndex = 0;
+    m_tailIndex = 0;
     m_size = 0;
 }
 
 void Fifo::push(Pixel data) {
-    FNode* newNode = new FNode{nullptr, data};
-
     if(m_size == 0) {
-        m_head = newNode;
-        m_tail = newNode;
+        m_headIndex = 0;
+        m_tailIndex = 0;
+        m_buffer[0] = data;
     } else {
-        m_tail->nextNode = newNode;
-        m_tail = newNode;
+        m_tailIndex++;
+        if(m_tailIndex >= BUFFER_SIZE) {
+            m_tailIndex = 0;
+        }
+        m_buffer[m_tailIndex] = data;
     }
 
     m_size++;
@@ -26,21 +28,21 @@ Pixel Fifo::pop() {
         throw std::runtime_error("ERROR: Can't pop an empty Fifo!");
         return {0}; // Shouldn't happen
     } else {
-        FNode* curNode = m_head;
-        Pixel data = curNode->data;
-        m_head = m_head->nextNode;
-        
+        Pixel data = m_buffer[m_headIndex];
+        m_headIndex++;
+        if(m_headIndex >= BUFFER_SIZE) {
+            m_headIndex = 0;
+        }
         m_size--;
-        delete curNode;
 
         return data;
     }
 }
 
 void Fifo::reset() {
-    while(m_size) {
-        pop();
-    }
+    m_headIndex = 0;
+    m_tailIndex = 0;
+    m_size = 0;
 }
 
 u16 Fifo::getSize() {

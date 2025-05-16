@@ -67,8 +67,12 @@ class Fifo {
         u16 getSize();
 
     private:
-        FNode* m_head;
-        FNode* m_tail;
+        // FNode* m_head;
+        // FNode* m_tail;
+        static const u8 BUFFER_SIZE = 32;
+        std::array<Pixel, BUFFER_SIZE> m_buffer;
+        u8 m_headIndex;
+        u8 m_tailIndex;
         u16 m_size;
 
 };
