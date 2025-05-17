@@ -183,7 +183,7 @@ bool UI::isPaused() {
 }
 
 void UI::initGameText() {
-    m_gameImg = GenImageColor(WIDTH_SIZE, HEIGHT_SIZE, RAYWHITE);
+    m_gameImg = GenImageColor(Ppu::WIDTH_SIZE, Ppu::HEIGHT_SIZE, RAYWHITE);
     m_gameText = LoadTextureFromImage(m_gameImg);
 }
 
@@ -194,9 +194,9 @@ void UI::initTilesText() {
 
 void UI::drawLCD() {
     auto video = m_emu->getPpu().getVideo();
-    for(int y = 0; y < HEIGHT_SIZE; y++) {
-        for(int x = 0; x < WIDTH_SIZE; x++) {
-            ImageDrawPixel(&m_gameImg, x, y, COLORS[video[y*WIDTH_SIZE + x]]);
+    for(int y = 0; y < Ppu::HEIGHT_SIZE; y++) {
+        for(int x = 0; x < Ppu::WIDTH_SIZE; x++) {
+            ImageDrawPixel(&m_gameImg, x, y, COLORS[video[y*Ppu::WIDTH_SIZE + x]]);
         }
     }
         
@@ -206,21 +206,21 @@ void UI::drawLCD() {
     int currentHeight = GetScreenHeight();
 
     if(m_keepAspectRatio) {
-        float scaleX = (float)currentWidth / WIDTH_SIZE;
-        float scaleY = (float)currentHeight / HEIGHT_SIZE;
+        float scaleX = (float)currentWidth / Ppu::WIDTH_SIZE;
+        float scaleY = (float)currentHeight / Ppu::HEIGHT_SIZE;
         float scale = scaleX < scaleY ? scaleX : scaleY;
 
-        int offset_x = (currentWidth - scale*WIDTH_SIZE) / 2;
-        int offset_y = (currentHeight - scale*HEIGHT_SIZE) / 2;
+        int offset_x = (currentWidth - scale*Ppu::WIDTH_SIZE) / 2;
+        int offset_y = (currentHeight - scale*Ppu::HEIGHT_SIZE) / 2;
 
-        Rectangle srcRec = {0.0f, 0.0f, (float)WIDTH_SIZE, (float)HEIGHT_SIZE};
-        Rectangle desRec = {offset_x, offset_y, (float)(WIDTH_SIZE * scale), (float)(HEIGHT_SIZE * scale)};
+        Rectangle srcRec = {0.0f, 0.0f, (float)Ppu::WIDTH_SIZE, (float)Ppu::HEIGHT_SIZE};
+        Rectangle desRec = {offset_x, offset_y, (float)(Ppu::WIDTH_SIZE * scale), (float)(Ppu::HEIGHT_SIZE * scale)};
         Vector2 org = {0.0f, 0.0f};
 
         ClearBackground(BLACK);
         DrawTexturePro(m_gameText, srcRec, desRec, org, 0, RAYWHITE);
     } else {
-        Rectangle srcRec = {0.0f, 0.0f, (float)WIDTH_SIZE, (float)HEIGHT_SIZE};
+        Rectangle srcRec = {0.0f, 0.0f, (float)Ppu::WIDTH_SIZE, (float)Ppu::HEIGHT_SIZE};
         Rectangle desRec = {0.0f, 0.0f, currentWidth, currentHeight};
         Vector2 org = {0.0f, 0.0f};
 

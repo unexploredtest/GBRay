@@ -4,32 +4,8 @@
 #include <array>
 
 #include "common.hpp"
+#include "sprite.hpp"
 
-
-static const u16 FIRST_TILE_OFFSET = 0x8000;
-static const u16 SECOND_TILE_OFFSET = 0x8800;
-static const u16 THIRD_TILE_OFFSET = 0x9000;
-
-static const u16 FIRST_MAP_OFFSET = 0x9800;
-static const u16 SECOND_MAP_OFFSET = 0x9C00;
-
-
-static const u8 WIDTH_SIZE = 160;
-static const u8 HEIGHT_SIZE = 144;
-
-static const u8 OAM_TICKS = 80;
-static const u16 LINE_TCIKS = 456;
-static const u8 PPU_LINES = 144;
-
-// In microseconds
-static const u32 FRAME_TIME = 16740;
-
-static constexpr Color COLORS[] = {
-    Color{0x9B, 0xBC, 0x0F, 0xFF},
-    Color{0x8b, 0xac, 0x0f, 0xFF},
-    Color{0x30, 0x62, 0x30, 0xFF},
-    Color{0x0f, 0x38, 0x0f, 0xFF}
-};
 
 enum PpuMode {
     PM_HBLANK,
@@ -89,37 +65,6 @@ struct WDFetchData {
     u8 tileHigh;
 };
 
-struct Sprite {
-    u8 yPos;
-    u8 xPos;
-    u8 index;
-    u8 attributes;
-
-    bool hasPriority();
-    bool yFlip();
-    bool xFlip();
-    u8 dmgPalette();
-
-    bool operator<(const Sprite& other) const;
-};
-
-class SpriteBuffer {
-    private:
-        static const u8 BUFFER_SIZE = 10;
-        std::array<Sprite, BUFFER_SIZE> m_buffer;
-        u8 m_size;      
-
-    public:
-        SpriteBuffer();
-        void add(Sprite sprite);
-        Sprite getLast();
-        void removeLast();
-        void sort();
-        u8 getSize();
-        std::array<Sprite, BUFFER_SIZE>& getArray();
-};
-
-
 class Ppu {
     public:
         Ppu() = default;
@@ -141,10 +86,27 @@ class Ppu {
         void changeFrameSpeed(float speed);
         float getSpeedRatio();
 
+        static const u8 WIDTH_SIZE = 160;
+        static const u8 HEIGHT_SIZE = 144;
         static const u32 VIDEO_SIZE = WIDTH_SIZE*HEIGHT_SIZE;
+
         std::array<u8, VIDEO_SIZE>& getVideo();
 
     private:
+        static const u16 FIRST_TILE_OFFSET = 0x8000;
+        static const u16 SECOND_TILE_OFFSET = 0x8800;
+        static const u16 THIRD_TILE_OFFSET = 0x9000;
+        
+        static const u16 FIRST_MAP_OFFSET = 0x9800;
+        static const u16 SECOND_MAP_OFFSET = 0x9C00;
+        
+        static const u8 OAM_TICKS = 80;
+        static const u16 LINE_TCIKS = 456;
+        static const u8 PPU_LINES = 144;
+        
+        // In microseconds
+        static const u32 FRAME_TIME = 16740;
+
         Emu* m_emu;
         static const u16 VRAM_SIZE = 0x2000;
         static const u16 OAM_SIZE = 0xA0;
