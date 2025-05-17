@@ -53,11 +53,6 @@ struct Pixel {
     u8 backPrio; 
 };
 
-struct FNode {
-    FNode* nextNode;
-    Pixel data;
-};
-
 class Fifo {
     public:
         Fifo();
@@ -67,8 +62,6 @@ class Fifo {
         u16 getSize();
 
     private:
-        // FNode* m_head;
-        // FNode* m_tail;
         static const u8 BUFFER_SIZE = 32;
         std::array<Pixel, BUFFER_SIZE> m_buffer;
         u8 m_headIndex;
