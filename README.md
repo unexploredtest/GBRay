@@ -1,6 +1,6 @@
-# Gearboy
+# GBRay
 
-A basic Gameboy emulator written in C++, for educational purposes.
+A basic Gameboy emulator written in C++, for educational purposes. Raylib is used for display.
 
 <img src="images/game_img.png">
 
