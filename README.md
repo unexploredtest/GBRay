@@ -26,6 +26,12 @@ cmake ..
 make
 ```
 
+## TODOs
+
+- [ ] Add support for more types of ROMs
+- [ ] Add the ability to read from a configuration file
+- [ ] Add tests
+
 
 ## Documents and resources used:
 
